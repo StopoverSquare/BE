@@ -27,11 +27,17 @@ public class User {
     @Column(nullable = false)
     private Boolean social;
 
+    @Column(nullable = false)
+    @Enumerated(value = EnumType.STRING)
+    private UserRoleEnum role;
+
+
     @Builder
-    private User(String password, String nickname, String profileImageUrl, Boolean social) {
-        this.password = password;
+    public User(String nickname, String password, String profileImageUrl, Boolean social, UserRoleEnum role) {
         this.nickname = nickname;
+        this.password = password;
         this.profileImageUrl = profileImageUrl;
         this.social = social;
+        this.role = role;
     }
 }

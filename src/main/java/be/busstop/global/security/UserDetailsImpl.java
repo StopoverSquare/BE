@@ -1,6 +1,7 @@
 package be.busstop.global.security;
 
 import be.busstop.domain.user.entity.User;
+import be.busstop.domain.user.entity.UserRoleEnum;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -13,20 +14,9 @@ public class UserDetailsImpl implements UserDetails {
         this.user = user;
     }
 
-    @Override
-    public String getPassword(){
-        return user.getPassword();
+    public User getUser() {
+        return user;
     }
-
-    @Override
-    public String getUsername(){
-        return user.getNickname();
-    }
-
-    public String getProfile(){
-        return user.getProfileImageUrl();
-    }
-
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -34,23 +24,36 @@ public class UserDetailsImpl implements UserDetails {
     }
 
     @Override
+    public String getPassword() {
+        return user.getPassword();
+    }
+
+    @Override
+    public String getUsername() {
+        return user.getNickname();
+    }
+
+    public UserRoleEnum getRole(){
+        return user.getRole();
+    }
+
+    @Override
     public boolean isAccountNonExpired() {
-        return true;
+        return false;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return false;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true;
+        return false;
     }
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return false;
     }
-
 }
