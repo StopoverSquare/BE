@@ -67,14 +67,29 @@ public class Post extends Timestamped {
     private String profileImageUrl;
 
     public Post(PostRequestDto postRequestDto, User user, List<String> imageUrlList ) {
-        this.user = user;
+        this.user = this.user;
         this.category = postRequestDto.getCategory();
         this.title = postRequestDto.getTitle();
         this.content = postRequestDto.getContent();
+        this.location = postRequestDto.getLocation();
         this.StartDate = postRequestDto.getStartDate();
-        this.nickname = user.getNickname();
+        this.nickname = this.user.getNickname();
         this.imageUrlList = imageUrlList;
-        this.profileImageUrl = user.getProfileImageUrl();
+        this.profileImageUrl = this.user.getProfileImageUrl();
 
+    }
+
+    public void increaseViews() {
+        this.views++;
+    }
+
+    public void increaseRecommend() {
+        this.recommends += 1;
+    }
+
+    public void decreaseRecommend() {
+        if (this.recommends > 0) {
+            this.recommends -= 1;
+        }
     }
 }

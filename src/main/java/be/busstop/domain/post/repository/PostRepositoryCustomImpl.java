@@ -30,6 +30,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                 .where(
                         categoryEq(condition.getCategory()),
                         dateEq(condition.getStartDate()),
+                        titleOrContentEq(condition.getTitleOrContent()),
                         locationEq(condition.getLocation()))
                 .orderBy(QPost.post.createdAt.desc())
                 .offset(pageable.getOffset())
@@ -41,6 +42,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                 .where(
                         categoryEq(condition.getCategory()),
                         dateEq(condition.getStartDate()),
+                        titleOrContentEq(condition.getTitleOrContent()),
                         locationEq(condition.getLocation()))
                 .fetchCount();
 
@@ -56,5 +58,12 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
     private BooleanExpression categoryEq(String categoryCond) {
         return hasText(categoryCond) ? QPost.post.category.eq(Category.valueOf(categoryCond)) : null;
     }
+
+    private BooleanExpression titleOrContentEq(String titleOrContent) {
+        return hasText(titleOrContent) ?
+                QPost.post.title.contains(titleOrContent)
+                        .or(QPost.post.content.contains(titleOrContent)) : null;
+    }
+
 
 }
