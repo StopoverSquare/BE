@@ -2,6 +2,8 @@ package be.busstop.global.security.jwt;
 
 
 import be.busstop.domain.user.dto.LoginRequestDto;
+import be.busstop.domain.user.entity.UserRoleEnum;
+import be.busstop.global.redis.RedisService;
 import be.busstop.global.security.UserDetailsImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
@@ -21,7 +23,7 @@ import java.util.Map;
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final JwtUtil jwtUtil;
 
-    public JwtAuthenticationFilter(JwtUtil jwtUtil) {
+    public JwtAuthenticationFilter(JwtUtil jwtUtil, RedisService redisService) {
         this.jwtUtil = jwtUtil;
         setFilterProcessesUrl("/api/auth/login");
     }
@@ -48,9 +50,13 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         log.info("로그인 성공 및 JWT 생성");
+        String userId = String.valueOf(((UserDetailsImpl) authResult.getPrincipal()).getUser().getId());
         String nickname = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
-        String token = jwtUtil.createToken(nickname);
-        jwtUtil.addTokenToHeader(token, response);
+        String username = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getNickname();
+        UserRoleEnum role = ((UserDetailsImpl) authResult.getPrincipal()).getRole();
+        String profileImageUrl = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getProfileImageUrl();
+        String token = jwtUtil.createToken(userId,nickname,username,role,profileImageUrl);
+        jwtUtil.addJwtHeader(token, response);
 
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("success", true);

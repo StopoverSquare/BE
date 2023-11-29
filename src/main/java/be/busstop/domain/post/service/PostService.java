@@ -1,5 +1,7 @@
 package be.busstop.domain.post.service;
 
+import be.busstop.domain.user.entity.UserRoleEnum;
+import be.busstop.global.security.jwt.JwtUtil;
 import be.busstop.global.stringCode.ErrorCodeEnum;
 import io.jsonwebtoken.Claims;
 import be.busstop.domain.post.dto.PostRequestDto;
@@ -38,6 +40,7 @@ import static be.busstop.global.utils.ResponseUtils.okWithMessage;
 @RequiredArgsConstructor
 public class PostService {
 
+    private final JwtUtil jwtUtil;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final RecommendRepository recommendRepository;
@@ -49,12 +52,12 @@ public class PostService {
 
     @Transactional
     public ApiResponse<?> getSinglePost(Long postId, HttpServletRequest req) {
-        String token = jwtUtils.getTokenFromHeader(req);
+        String token = jwtUtil.getTokenFromHeader(req);
         String subStringToken;
         Boolean isRecommended = false;
         if (token != null) {
-            subStringToken = jwtUtils.substringHeaderToken(token);
-            Claims userInfo = jwtUtils.getUserInfoFromToken(subStringToken);
+            subStringToken = jwtUtil.substringHeaderToken(token);
+            Claims userInfo = jwtUtil.getUserInfoFromToken(subStringToken);
             Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("?"));
             User user = userRepository.findByNickname(userInfo.getSubject()).orElseThrow(() -> new IllegalArgumentException("?"));
 

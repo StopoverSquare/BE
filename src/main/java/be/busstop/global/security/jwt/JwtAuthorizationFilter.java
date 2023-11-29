@@ -2,6 +2,7 @@ package be.busstop.global.security.jwt;
 
 
 import be.busstop.global.security.UserDetailsServiceImpl;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,7 +33,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain filterChain) throws ServletException, IOException, IOException {
         // JWT 토큰 substring
-        String tokenValue = jwtUtil.getJwtFromHeader(req);
+        String tokenValue = jwtUtil.getTokenFromHeader(req);
 
         if (StringUtils.hasText(tokenValue)) {
             log.info(tokenValue);
