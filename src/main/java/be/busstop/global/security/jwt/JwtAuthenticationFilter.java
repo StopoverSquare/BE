@@ -1,7 +1,8 @@
 package be.busstop.global.security.jwt;
 
-import busstop.com.busstopbe.domain.user.dto.LoginRequestDto;
-import busstop.com.busstopbe.global.security.UserDetailsImpl;
+
+import be.busstop.domain.user.dto.LoginRequestDto;
+import be.busstop.global.security.UserDetailsImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

@@ -1,7 +1,7 @@
 package be.busstop.global.security.jwt;
 
-import busstop.com.busstopbe.global.security.UserDetailsServiceImpl;
-import io.jsonwebtoken.Claims;
+
+import be.busstop.global.security.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

@@ -66,11 +66,12 @@ public class Post extends Timestamped {
 
     private String profileImageUrl;
 
-    public Post(PostRequestDto postRequestDto, User user, List<String> imageUrlList ) {
+    public Post(PostRequestDto postRequestDto, List<String> imageUrlList ) {
         this.user = user;
         this.category = postRequestDto.getCategory();
         this.title = postRequestDto.getTitle();
         this.content = postRequestDto.getContent();
+        this.location = postRequestDto.getLocation();
         this.StartDate = postRequestDto.getStartDate();
         this.nickname = user.getNickname();
         this.imageUrlList = imageUrlList;
