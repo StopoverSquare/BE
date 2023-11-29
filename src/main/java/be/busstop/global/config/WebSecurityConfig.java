@@ -1,8 +1,10 @@
 package be.busstop.global.config;
 
+import be.busstop.global.redis.RedisService;
 import be.busstop.global.security.UserDetailsServiceImpl;
 import be.busstop.global.security.jwt.JwtAuthenticationFilter;
 import be.busstop.global.security.jwt.JwtAuthorizationFilter;
+import be.busstop.global.security.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -13,8 +15,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -26,21 +26,17 @@ public class WebSecurityConfig{
     private final JwtUtil jwtUtil;
     private final CorsConfig corsConfig;
     private final UserDetailsServiceImpl userDetailsService;
+    private final RedisService redisService;
     private final AuthenticationConfiguration authenticationConfiguration;
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception{
         return configuration.getAuthenticationManager();
     }
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception {
-        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtUtil);
+        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtUtil, redisService);
         filter.setAuthenticationManager(authenticationManager(authenticationConfiguration));
         return filter;
     }
@@ -63,9 +59,7 @@ public class WebSecurityConfig{
                         authorizeHttpRequests
                                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll() // resources 접근 허용 설정
                                 .requestMatchers(new AntPathRequestMatcher("/")).permitAll()
-                                .requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll()
-//                        .requestMatchers(new AntPathRequestMatcher("/api/news", HttpMethod.GET.name())).permitAll()
-                                .requestMatchers(new AntPathRequestMatcher("/api/news/**")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/api/users/**")).permitAll()
                                 .anyRequest().authenticated() // 그 외 요청은 인증 필요
         );
 
@@ -76,5 +70,4 @@ public class WebSecurityConfig{
 
         return http.build();
     }
-
 }
