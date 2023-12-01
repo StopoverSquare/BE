@@ -9,5 +9,6 @@ public class PostSearchCondition {
     private String location;
     private String StartDate;
     private String category;
+    private String titleOrContent;
 
 }

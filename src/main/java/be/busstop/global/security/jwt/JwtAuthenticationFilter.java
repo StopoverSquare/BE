@@ -52,6 +52,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         log.info("로그인 성공 및 JWT 생성");
+
         String nickname = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
         UserRoleEnum role = ((UserDetailsImpl) authResult.getPrincipal()).getRole();
 
@@ -60,7 +61,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String refreshToken = jwtUtil.createRefreshToken(nickname, role);
 
         response.addHeader(JwtUtil.ACCESS_HEADER, accessToken);
-        response.addHeader(JwtUtil.REFRESH_HEADER, refreshToken);
+
 
         //Refresh Token 저장
         redisService.setValues(jwtUtil.substringToken(refreshToken), nickname, 60 * 60 * 24 * 30 * 1000L);
