@@ -1,25 +1,36 @@
 package be.busstop.domain.post.service;
 
-
+import be.busstop.domain.user.entity.UserRoleEnum;
+import be.busstop.global.security.jwt.JwtUtil;
+import io.jsonwebtoken.Claims;
 import be.busstop.domain.post.dto.PostRequestDto;
+import be.busstop.domain.post.dto.PostResponseDto;
 import be.busstop.domain.post.dto.PostSearchCondition;
 import be.busstop.domain.post.entity.Post;
 import be.busstop.domain.post.repository.PostRepository;
 import be.busstop.domain.user.entity.User;
+import be.busstop.domain.user.repository.UserRepository;
+import be.busstop.global.exception.InvalidConditionException;
 import be.busstop.global.responseDto.ApiResponse;
-import be.busstop.global.stringCode.SuccessCodeEnum;
-import be.busstop.global.utils.ResponseUtils;
+import be.busstop.global.responseDto.ErrorResponse;
 import be.busstop.global.utils.S3;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import static be.busstop.global.stringCode.ErrorCodeEnum.*;
+import static be.busstop.global.stringCode.SuccessCodeEnum.POST_CREATE_SUCCESS;
+import static be.busstop.global.stringCode.SuccessCodeEnum.POST_DELETE_SUCCESS;
 import static be.busstop.global.utils.ResponseUtils.ok;
+import static be.busstop.global.utils.ResponseUtils.okWithMessage;
 
 
 @Slf4j
@@ -28,11 +39,22 @@ import static be.busstop.global.utils.ResponseUtils.ok;
 @RequiredArgsConstructor
 public class PostService {
 
+    private final JwtUtil jwtUtil;
     private final PostRepository postRepository;
+    private final UserRepository userRepository;
     private final S3 s3;
 
-    public ApiResponse<?> searchPost(PostSearchCondition condition, Pageable pageable) {
+    public ApiResponse<?> searchPost(PostSearchCondition condition, Pageable pageable, HttpServletRequest request) {
         return ok(postRepository.searchPostByPage(condition, pageable));
+    }
+
+    @Transactional
+    public ApiResponse<?> getSinglePost(Long postId, HttpServletRequest req) {
+        Post post = postRepository.findById(postId).orElseThrow(() ->
+                new InvalidConditionException(POST_NOT_EXIST));
+        log.info("게시물 ID '{}' 조회 성공", postId);
+        post.increaseViews();
+        return ok(new PostResponseDto(post));
     }
 
     @Transactional
@@ -41,6 +63,42 @@ public class PostService {
         postRequestDto.setImageUrlList(imageUrlList);
         postRepository.save(new Post(postRequestDto, user, imageUrlList));
         log.info("'{}'님이 새로운 게시물을 생성했습니다.", user.getNickname());
-        return ResponseUtils.okWithMessage(SuccessCodeEnum.POST_CREATE_SUCCESS);
+        return okWithMessage(POST_CREATE_SUCCESS);
     }
+    @Transactional
+    public ApiResponse<?> deletePost(Long postId, User user) {
+        Post post = confirmPost(postId, user);
+        if (post.getReportCount() >= 1) {
+            return ApiResponse.error(new ErrorResponse(POST_DELETE_FAILED));
+        }
+        deleteImage(post);
+        postRepository.delete(post);
+        log.info("'{}'님이 게시물 ID '{}'를 삭제했습니다.", user.getNickname(), postId);
+        return okWithMessage(POST_DELETE_SUCCESS);
+    }
+
+    private void deleteImage(Post post) {
+        List<String> imageUrlList = post.getImageUrlList();
+        if (StringUtils.hasText(String.valueOf(imageUrlList))) {
+            s3.delete(imageUrlList);
+        }
+    }
+
+    private Post findPost(Long postId) {
+        return postRepository.findById(postId).orElseThrow(() ->
+                new InvalidConditionException(POST_NOT_EXIST));
+    }
+
+    private Post confirmPost(Long postId, User user) throws InvalidConditionException {
+        Post post = findPost(postId);
+        log.info("Confirming post access: postId={}, user={}, postUser={}, userRole={}",
+                postId, user.getId(), post.getUser().getId(), user.getRole());
+        if (!user.getId().equals(post.getUser().getId()) && !user.getRole().equals(UserRoleEnum.ADMIN)) {
+            throw new InvalidConditionException(USER_NOT_MATCH);
+        }
+
+        log.info("Post access confirmed: postId={}, user={}", postId, user.getId());
+        return post;
+    }
+
 }
