@@ -51,11 +51,10 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         log.info("로그인 성공 및 JWT 생성");
         String userId = String.valueOf(((UserDetailsImpl) authResult.getPrincipal()).getUser().getId());
-        String nickname = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
-        String username = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getNickname();
+        String nickname = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getNickname();
         UserRoleEnum role = ((UserDetailsImpl) authResult.getPrincipal()).getRole();
         String profileImageUrl = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getProfileImageUrl();
-        String token = jwtUtil.createToken(userId,nickname,username,role,profileImageUrl);
+        String token = jwtUtil.createToken(userId,nickname,role,profileImageUrl);
         jwtUtil.addJwtHeader(token, response);
 
         Map<String, Object> data = new LinkedHashMap<>();

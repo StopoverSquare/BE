@@ -16,15 +16,15 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/post")
+@RequestMapping("api/post")
 @RequiredArgsConstructor
 public class PostController {
 
     private final PostService postService;
 
     @GetMapping
-    public ApiResponse<?> searchPost(PostSearchCondition condition, Pageable pageable) {
-        return postService.searchPost(condition, pageable);
+    public ApiResponse<?> searchPost(PostSearchCondition condition, Pageable pageable, HttpServletRequest httpServletRequest) {
+        return postService.searchPost(condition, pageable, httpServletRequest);
     }
     @GetMapping("/{postId}")
     public ApiResponse<?> readOnePost(@PathVariable Long postId, HttpServletRequest req) {

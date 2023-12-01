@@ -2,14 +2,12 @@ package be.busstop.domain.post.service;
 
 import be.busstop.domain.user.entity.UserRoleEnum;
 import be.busstop.global.security.jwt.JwtUtil;
-import be.busstop.global.stringCode.ErrorCodeEnum;
 import io.jsonwebtoken.Claims;
 import be.busstop.domain.post.dto.PostRequestDto;
 import be.busstop.domain.post.dto.PostResponseDto;
 import be.busstop.domain.post.dto.PostSearchCondition;
 import be.busstop.domain.post.entity.Post;
 import be.busstop.domain.post.repository.PostRepository;
-import be.busstop.domain.recommend.repository.RecommendRepository;
 import be.busstop.domain.user.entity.User;
 import be.busstop.domain.user.repository.UserRepository;
 import be.busstop.global.exception.InvalidConditionException;
@@ -26,6 +24,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static be.busstop.global.stringCode.ErrorCodeEnum.*;
 import static be.busstop.global.stringCode.SuccessCodeEnum.POST_CREATE_SUCCESS;
@@ -43,33 +42,19 @@ public class PostService {
     private final JwtUtil jwtUtil;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
-    private final RecommendRepository recommendRepository;
     private final S3 s3;
 
-    public ApiResponse<?> searchPost(PostSearchCondition condition, Pageable pageable) {
+    public ApiResponse<?> searchPost(PostSearchCondition condition, Pageable pageable, HttpServletRequest request) {
         return ok(postRepository.searchPostByPage(condition, pageable));
     }
 
     @Transactional
     public ApiResponse<?> getSinglePost(Long postId, HttpServletRequest req) {
-        String token = jwtUtil.getTokenFromHeader(req);
-        String subStringToken;
-        Boolean isRecommended = false;
-        if (token != null) {
-            subStringToken = jwtUtil.substringHeaderToken(token);
-            Claims userInfo = jwtUtil.getUserInfoFromToken(subStringToken);
-            Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("?"));
-            User user = userRepository.findByNickname(userInfo.getSubject()).orElseThrow(() -> new IllegalArgumentException("?"));
-
-            if (recommendRepository.findByPostAndUser(post, user).isPresent()) {
-                isRecommended = true;
-            }
-        }
-        Post post = postRepository.findDetailPost(postId).orElseThrow(() ->
+        Post post = postRepository.findById(postId).orElseThrow(() ->
                 new InvalidConditionException(POST_NOT_EXIST));
         log.info("게시물 ID '{}' 조회 성공", postId);
         post.increaseViews();
-        return ok(new PostResponseDto(post, isRecommended));
+        return ok(new PostResponseDto(post));
     }
 
     @Transactional

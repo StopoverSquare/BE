@@ -58,7 +58,6 @@ public class Post extends Timestamped {
     @Column
     private List<String> imageUrlList = new ArrayList<>(); // 이미지 URL 리스트
 
-    private int recommends;
 
     private int views;
 
@@ -67,7 +66,7 @@ public class Post extends Timestamped {
     private String profileImageUrl;
 
     public Post(PostRequestDto postRequestDto, User user, List<String> imageUrlList ) {
-        this.user = this.user;
+        this.user = user;
         this.category = postRequestDto.getCategory();
         this.title = postRequestDto.getTitle();
         this.content = postRequestDto.getContent();
@@ -83,13 +82,5 @@ public class Post extends Timestamped {
         this.views++;
     }
 
-    public void increaseRecommend() {
-        this.recommends += 1;
-    }
 
-    public void decreaseRecommend() {
-        if (this.recommends > 0) {
-            this.recommends -= 1;
-        }
-    }
 }
