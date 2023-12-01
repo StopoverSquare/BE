@@ -1,6 +1,6 @@
 package be.busstop.global.security.jwt;
 
-import busstop.com.busstopbe.global.security.UserDetailsServiceImpl;
+import be.busstop.global.security.UserDetailsServiceImpl;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -17,10 +17,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-
 @Slf4j(topic = "JWT 검증 및 인가")
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
-
     private final JwtUtil jwtUtil;
     private final UserDetailsServiceImpl userDetailsService;
 
@@ -30,19 +28,19 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain filterChain) throws ServletException, IOException, IOException {
-        // JWT 토큰 substring
-        String tokenValue = jwtUtil.getJwtFromHeader(req);
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        String accessTokenValue = jwtUtil.getAccessJwtFromHeader(request);
+        String refreshTokenValue = jwtUtil.getRefreshJwtFromHeader(request);
 
-        if (StringUtils.hasText(tokenValue)) {
-            log.info(tokenValue);
+        if(StringUtils.hasText(accessTokenValue)){
+            log.info(accessTokenValue);
 
-            if (!jwtUtil.validateToken(tokenValue)) {
+            if (!jwtUtil.validateAllToken(accessTokenValue, refreshTokenValue, response)) {
                 log.error("Token Error");
                 return;
             }
 
-            Claims info = jwtUtil.getUserInfoFromToken(tokenValue);
+            Claims info = jwtUtil.getUserInfoFromToken(accessTokenValue.split(" ")[1].trim());
 
             try {
                 setAuthentication(info.getSubject());
@@ -51,21 +49,20 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 return;
             }
         }
-
-        filterChain.doFilter(req, res);
+        filterChain.doFilter(request, response);
     }
 
-    public void setAuthentication(String nickname) {
+    public void setAuthentication(String email) {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
-        Authentication authentication = createAuthentication(nickname);
+        Authentication authentication = createAuthentication(email);
         context.setAuthentication(authentication);
 
         SecurityContextHolder.setContext(context);
     }
 
     // 인증 객체 생성
-    private Authentication createAuthentication(String nickname) {
-        UserDetails userDetails = userDetailsService.loadUserByUsername(nickname);
+    private Authentication createAuthentication(String email) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 }

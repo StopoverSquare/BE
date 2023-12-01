@@ -1,7 +1,9 @@
 package be.busstop.global.security.jwt;
 
-import busstop.com.busstopbe.domain.user.dto.LoginRequestDto;
-import busstop.com.busstopbe.global.security.UserDetailsImpl;
+import be.busstop.domain.user.dto.LoginRequestDto;
+import be.busstop.domain.user.entity.UserRoleEnum;
+import be.busstop.global.redis.RedisService;
+import be.busstop.global.security.UserDetailsImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -16,19 +18,22 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
 @Slf4j(topic = "로그인 및 JWT 생성")
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final JwtUtil jwtUtil;
+    private final RedisService redisService;
 
-    public JwtAuthenticationFilter(JwtUtil jwtUtil) {
+    public JwtAuthenticationFilter(JwtUtil jwtUtil, RedisService redisService) {
         this.jwtUtil = jwtUtil;
-        setFilterProcessesUrl("/api/auth/login");
+        this.redisService = redisService;
+        setFilterProcessesUrl("/api/users/login");
     }
 
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException{
         log.info("로그인 시도");
-        try {
+        try{
             LoginRequestDto requestDto = new ObjectMapper().readValue(request.getInputStream(), LoginRequestDto.class);
 
             return getAuthenticationManager().authenticate(
@@ -38,7 +43,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                             null
                     )
             );
-        } catch (IOException e) {
+        }catch (IOException e){
             log.error(e.getMessage());
             throw new RuntimeException(e.getMessage());
         }
@@ -48,9 +53,17 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         log.info("로그인 성공 및 JWT 생성");
         String nickname = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
-        String token = jwtUtil.createToken(nickname);
-        jwtUtil.addTokenToHeader(token, response);
+        UserRoleEnum role = ((UserDetailsImpl) authResult.getPrincipal()).getRole();
 
+        //JWT Token 생성
+        String accessToken = jwtUtil.createAccessToken(nickname, role);
+        String refreshToken = jwtUtil.createRefreshToken(nickname, role);
+
+        response.addHeader(JwtUtil.ACCESS_HEADER, accessToken);
+        response.addHeader(JwtUtil.REFRESH_HEADER, refreshToken);
+
+        //Refresh Token 저장
+        redisService.setValues(jwtUtil.substringToken(refreshToken), nickname, 60 * 60 * 24 * 30 * 1000L);
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("success", true);
         data.put("statusCode", HttpServletResponse.SC_OK);
