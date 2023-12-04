@@ -21,12 +21,14 @@ public class PostResponseDto {
     private Category category;
     private String title;
     private String nickname;
+    private String age;
+    private String gender;
     private String content;
     private LocalDateTime createdAt;
     private List<String> imageUrlList;
-    private String StartDate;
-    private Boolean isRecommend;
-    private long Recommends;
+    private String endDate;
+    private String status;
+    private Boolean isComplete;
     private int views;
     private String location;
     private String profileImageUrl;
@@ -40,33 +42,40 @@ public class PostResponseDto {
         this.views = post.getViews();
         this.title = post.getTitle();
         this.nickname = post.getUser().getNickname();
+        this.age = post.getUser().getAge();
+        this.gender = post.getUser().getGender();
         this.imageUrlList = post.getImageUrlList().stream().limit(1)
                 .map(String::new)
                 .collect(Collectors.toList());
         this.content = post.getContent();
         this.createdAt = post.getCreatedAt();
+        this.endDate = post.getEndDate();
         this.location = post.getLocation();
         this.profileImageUrl = post.getUser().getProfileImageUrl();
     }
 
     // 상세 조회
-    public PostResponseDto(Post post, Boolean isRecommend){
+    public PostResponseDto(Post post, Boolean isComplete){
         this.id = post.getId();
         this.userId = post.getUser().getId();
         this.category = post.getCategory();
         this.views = post.getViews();
         this.title = post.getTitle();
         this.nickname = post.getUser().getNickname();
+        this.age = post.getUser().getAge();
+        this.gender = post.getUser().getGender();
         this.content = post.getContent();
-        this.StartDate = post.getStartDate();
+        this.endDate = post.getEndDate();
         this.createdAt = post.getCreatedAt();
         this.imageUrlList = post.getImageUrlList().stream()
                 .map(String::new)
                 .collect(Collectors.toList());
         this.location = post.getLocation();
-        this.isRecommend = isRecommend;
-        this.Recommends = post.getRecommends();
         this.profileImageUrl = post.getUser().getProfileImageUrl();
+        this.isComplete = isComplete;
+        if (post.getStatus() != null) {
+            this.status = post.getStatus().name();
+        }
     }
 }
 

@@ -1,6 +1,7 @@
 package be.busstop.domain.post.entity;
 
 import be.busstop.domain.post.dto.PostRequestDto;
+import be.busstop.domain.poststatus.entity.Status;
 import be.busstop.domain.user.entity.User;
 import be.busstop.global.utils.Timestamped;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -44,6 +45,13 @@ public class Post extends Timestamped {
     @Column(name = "nickname", nullable = false)
     private String nickname;
 
+    @Column(name = "age", nullable = false)
+    private String age;
+
+    @Column(name = "gender", nullable = false)
+    private String gender;
+
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
@@ -51,7 +59,7 @@ public class Post extends Timestamped {
     private String location;
 
     @Column
-    private String StartDate;
+    private String endDate;
 
     @ElementCollection
     @BatchSize(size = 5)
@@ -61,9 +69,11 @@ public class Post extends Timestamped {
 
     private int views;
 
-    private long reportCount;
-
     private String profileImageUrl;
+
+
+    @Enumerated(EnumType.STRING)
+    private Status status = Status.IN_PROGRESS;
 
     public Post(PostRequestDto postRequestDto, User user, List<String> imageUrlList ) {
         this.user = user;
@@ -71,16 +81,26 @@ public class Post extends Timestamped {
         this.title = postRequestDto.getTitle();
         this.content = postRequestDto.getContent();
         this.location = postRequestDto.getLocation();
-        this.StartDate = postRequestDto.getStartDate();
+        this.endDate = postRequestDto.getEndDate();
         this.nickname = this.user.getNickname();
-        this.imageUrlList = imageUrlList;
+        this.age = this.user.getAge();
+        this.gender = this.user.getGender();
         this.profileImageUrl = this.user.getProfileImageUrl();
+        this.imageUrlList = imageUrlList;
 
     }
 
     public void increaseViews() {
         this.views++;
     }
+
+    public void markInProgress() {
+        this.status = Status.IN_PROGRESS;
+    }
+    public void markClosed() {
+        this.status = Status.COMPLETED;
+    }
+
 
 
 }

@@ -18,7 +18,7 @@ public class PostRequestDto {
     @Pattern(regexp = "^[\\s\\S]{1,1500}$", message = "내용은 1자에서 1500자까지만 허용되며 줄바꿈도 허용됩니다.")
     private String content;
     private String location;
-    private String StartDate;
+    private String endDate;
     private List<String> imageUrlList;
 
     public void setImageUrlList(List<String> imageUrlList) {

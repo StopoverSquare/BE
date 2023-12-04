@@ -44,8 +44,6 @@ public class QPost extends EntityPathBase<Post> {
 
     public final StringPath profileImageUrl = createString("profileImageUrl");
 
-    public final NumberPath<Integer> recommends = createNumber("recommends", Integer.class);
-
     public final NumberPath<Long> reportCount = createNumber("reportCount", Long.class);
 
     public final StringPath StartDate = createString("StartDate");
