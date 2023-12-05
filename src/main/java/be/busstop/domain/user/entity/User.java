@@ -1,13 +1,11 @@
 package be.busstop.domain.user.entity;
 
-import be.busstop.domain.post.entity.PostSearchHistory;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
 
 @Getter
 @Entity
@@ -34,9 +32,6 @@ public class User {
     @Enumerated(value = EnumType.STRING)
     private UserRoleEnum role;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<PostSearchHistory> searchHistory;
-
 
     @Builder
     public User(String nickname, String password, String profileImageUrl, Boolean social, UserRoleEnum role) {
@@ -47,7 +42,5 @@ public class User {
         this.role = role;
     }
 
-    public void setSearchHistory(List<PostSearchHistory> searchHistory) {
-        this.searchHistory = searchHistory;
-    }
+
 }
