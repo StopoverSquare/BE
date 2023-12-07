@@ -6,8 +6,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -40,8 +38,10 @@ public class User {
     private UserRoleEnum role;
 
     @Builder
-    public User(String nickname, String password, String profileImageUrl, Boolean social, UserRoleEnum role) {
+    public User(String nickname, String age, String gender, String password, String profileImageUrl, Boolean social, UserRoleEnum role) {
         this.nickname = nickname;
+        this.age = age;
+        this.gender = gender;
         this.password = password;
         this.profileImageUrl = profileImageUrl;
         this.social = social;

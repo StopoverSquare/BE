@@ -16,7 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/post")
+@RequestMapping("/api/post")
 @RequiredArgsConstructor
 public class PostController {
 
@@ -32,7 +32,7 @@ public class PostController {
     }
     @PostMapping
     public ApiResponse<?> createPost(@Valid @RequestPart(value = "data") PostRequestDto postRequestDto,
-                                     @RequestPart(value = "file", required = false) List<MultipartFile> images,
+                                     @RequestPart(value = "file") List<MultipartFile> images,
                                      @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
         return postService.createPost(postRequestDto, images, userDetailsImpl.getUser());
     }

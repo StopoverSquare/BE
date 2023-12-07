@@ -24,12 +24,18 @@ public class QPost extends EntityPathBase<Post> {
 
     public final be.busstop.global.utils.QTimestamped _super = new be.busstop.global.utils.QTimestamped(this);
 
+    public final StringPath age = createString("age");
+
     public final EnumPath<Category> category = createEnum("category", Category.class);
 
     public final StringPath content = createString("content");
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
+
+    public final StringPath endDate = createString("endDate");
+
+    public final StringPath gender = createString("gender");
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
@@ -44,9 +50,7 @@ public class QPost extends EntityPathBase<Post> {
 
     public final StringPath profileImageUrl = createString("profileImageUrl");
 
-    public final NumberPath<Long> reportCount = createNumber("reportCount", Long.class);
-
-    public final StringPath StartDate = createString("StartDate");
+    public final EnumPath<be.busstop.domain.poststatus.entity.Status> status = createEnum("status", be.busstop.domain.poststatus.entity.Status.class);
 
     public final StringPath title = createString("title");
 

@@ -4,6 +4,7 @@ import be.busstop.global.redis.RedisService;
 import be.busstop.global.security.UserDetailsServiceImpl;
 import be.busstop.global.security.jwt.JwtAuthenticationFilter;
 import be.busstop.global.security.jwt.JwtAuthorizationFilter;
+import be.busstop.global.security.jwt.JwtExceptionFilter;
 import be.busstop.global.security.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
@@ -20,18 +21,26 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class WebSecurityConfig{
     private final JwtUtil jwtUtil;
-    private final CorsConfig corsConfig;
     private final UserDetailsServiceImpl userDetailsService;
     private final RedisService redisService;
     private final AuthenticationConfiguration authenticationConfiguration;
+
+    @Bean
+    public JwtExceptionFilter jwtExceptionFilter() {
+        return new JwtExceptionFilter(jwtUtil);
+    }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception{
@@ -51,28 +60,38 @@ public class WebSecurityConfig{
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // CSRF 설정
-        http.csrf(AbstractHttpConfigurer::disable);
+    public CorsFilter corsFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.addAllowedOriginPattern("*");
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+        config.addExposedHeader("*");
+        source.registerCorsConfiguration("/**",config);
+        return new CorsFilter(source);
+    }
 
-        // 기본 설정인 Session 방식은 사용하지 않고 JWT 방식을 사용하기 위한 설정
-        http.sessionManagement((sessionManagement) ->
-                sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        );
-        http.authorizeHttpRequests((authorizeHttpRequests) ->
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+        // CSRF 설정, CORS 설정, 기존 세션 방식 -> JWT 방식
+        http
+                .csrf((csrf) -> csrf.disable()) // CSRF 비활성화
+                .cors(withDefaults()) // 기본 CORS 설정 적용
+                .sessionManagement((sessionManagement) ->
+                        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 관리 방식 설정
+                .authorizeHttpRequests((authorizeHttpRequests) ->
                         authorizeHttpRequests
                                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                                .requestMatchers(GET,"/**").permitAll()
-                                .requestMatchers(new AntPathRequestMatcher("/")).permitAll()
-                                .requestMatchers(new AntPathRequestMatcher("/api/users/**")).permitAll()
-                                .anyRequest().authenticated() // 그 외 요청은 인증 필요
-        );
-
-        // 필터 관리
-        http.addFilterBefore(jwtAuthorizationFilter(), JwtAuthenticationFilter.class);
-        http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
-        http.addFilterBefore(corsConfig.corsFilter(), JwtAuthorizationFilter.class);
-
+                                .requestMatchers(GET,"/api/**").permitAll()
+                                .requestMatchers(GET,"/api/post/**").permitAll()
+                                .requestMatchers(GET,"/api/test").permitAll()
+                                .anyRequest().authenticated()) // 그 외 모든 요청 인증처리
+                .addFilter(corsFilter())
+                .addFilterBefore(jwtAuthorizationFilter(), JwtAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtExceptionFilter(), JwtAuthenticationFilter.class);
         return http.build();
     }
     @Bean
