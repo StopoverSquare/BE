@@ -23,7 +23,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static be.busstop.global.stringCode.ErrorCodeEnum.*;
 import static be.busstop.global.stringCode.SuccessCodeEnum.POST_CREATE_SUCCESS;
@@ -86,6 +88,57 @@ public class PostService {
         log.info("'{}'님이 게시물 ID '{}'를 삭제했습니다.", user.getNickname(), postId);
         return okWithMessage(POST_DELETE_SUCCESS);
     }
+    @Transactional
+    public ApiResponse<?> getRandomPosts(Pageable pageable) {
+        List<Post> randomPosts = getRandomPostsFromDatabase(pageable);
+
+        return ApiResponse.success(randomPosts.stream()
+                .map(this::mapToPostResponseDto)
+                .collect(Collectors.toList()));
+    }
+
+    private List<Post> getRandomPostsFromDatabase(Pageable pageable) {
+        List<Post> allPosts = getRandomPostsFromDatabase();
+
+        int totalPosts = allPosts.size();
+        int pageSize = pageable.getPageSize();
+        int totalPages = (int) Math.ceil((double) totalPosts / pageSize);
+
+        int requestedPage = pageable.getPageNumber();
+        if (requestedPage >= totalPages) {
+            return Collections.emptyList();
+        }
+
+        int startIdx = requestedPage * pageSize;
+        int endIdx = Math.min(startIdx + pageSize, totalPosts);
+
+        return allPosts.subList(startIdx, endIdx);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Post> getRandomPostsFromDatabase() {
+        List<Post> allPosts = postRepository.findAll();
+        Collections.shuffle(allPosts);
+        return allPosts;
+    }
+
+    public PostResponseDto mapToPostResponseDto(Post post) {
+        return new PostResponseDto(
+                post.getId(),
+                post.getUser().getId(),
+                post.getCategory(),
+                post.getTitle(),
+                post.getUser().getNickname(),
+                post.getUser().getAge(),
+                post.getUser().getGender(),
+                post.getCreatedAt(),
+                post.getImageUrlList().stream().limit(1).map(String::new).collect(Collectors.toList()),
+                post.getEndDate(),
+                post.getLocation(),
+                post.getUser().getProfileImageUrl()
+        );
+    }
+
 
     private void deleteImage(Post post) {
         List<String> imageUrlList = post.getImageUrlList();

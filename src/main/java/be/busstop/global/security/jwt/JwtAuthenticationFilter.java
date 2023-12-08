@@ -3,7 +3,10 @@ package be.busstop.global.security.jwt;
 import be.busstop.domain.user.dto.LoginRequestDto;
 import be.busstop.domain.user.entity.UserRoleEnum;
 import be.busstop.global.redis.RedisService;
+import be.busstop.global.responseDto.ApiResponse;
+import be.busstop.global.responseDto.ErrorResponse;
 import be.busstop.global.security.UserDetailsImpl;
+import be.busstop.global.stringCode.ErrorCodeEnum;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -18,6 +21,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static be.busstop.global.utils.ResponseUtils.customError;
 
 @Slf4j(topic = "로그인 및 JWT 생성")
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
@@ -84,8 +89,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         log.info("로그인 실패");
 
         Map<String, Object> data = new LinkedHashMap<>();
+        ApiResponse<?> apiResponse = customError(ErrorCodeEnum.LOGIN_FAIL);
         data.put("success", false);
-        data.put("statusCode", HttpServletResponse.SC_BAD_REQUEST);
+        data.put("statusCode", apiResponse);
         data.put("msg", failed.getMessage());
 
         // 에러 메시지를 JSON 형식으로 생성
@@ -96,6 +102,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(errorJson);
-        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     }
 }
