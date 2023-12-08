@@ -3,9 +3,7 @@ package be.busstop.domain.post.repository;
 
 import be.busstop.domain.post.dto.PostResponseDto;
 import be.busstop.domain.post.dto.PostSearchCondition;
-import be.busstop.domain.post.dto.QPostResponseDto;
 import be.busstop.domain.post.entity.Category;
-import be.busstop.domain.post.entity.QPost;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
