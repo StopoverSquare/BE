@@ -22,6 +22,13 @@ public class PostController {
 
     private final PostService postService;
 
+    @GetMapping("/random")
+    public ApiResponse<?> getRandomPosts(@RequestParam(defaultValue = "0") int page,
+                                         @RequestParam(defaultValue = "10") int size,
+                                         Pageable pageable) {
+        return postService.getRandomPosts(pageable);
+    }
+
     @GetMapping
     public ApiResponse<?> searchPost(PostSearchCondition condition, Pageable pageable) {
         return postService.searchPost(condition, pageable);

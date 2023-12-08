@@ -77,5 +77,25 @@ public class PostResponseDto {
             this.status = post.getStatus().name();
         }
     }
+    // 랜덤 조회
+    public PostResponseDto(Long id, Long userId, Category category, String title,
+                               String nickname, String age, String gender,
+                               LocalDateTime createdAt, List<String> imageUrlList,
+                               String endDate, String location, String profileImageUrl) {
+        this.id = id;
+        this.userId = userId;
+        this.category = category;
+        this.title = title;
+        this.nickname = nickname;
+        this.age = age;
+        this.gender = gender;
+        this.createdAt = createdAt;
+        this.imageUrlList = imageUrlList.stream().limit(1)
+                .map(String::new)
+                .collect(Collectors.toList());
+        this.endDate = endDate;
+        this.location = location;
+        this.profileImageUrl = profileImageUrl;
+    }
 }
 

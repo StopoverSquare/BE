@@ -20,9 +20,5 @@ public abstract class Timestamped {
     @Temporal(TemporalType.TIMESTAMP)
     public LocalDateTime createdAt;
 
-    @LastModifiedDate
-    @Column
-    @Temporal(TemporalType.TIMESTAMP)
-    public LocalDateTime modifiedAt;
 }
 
