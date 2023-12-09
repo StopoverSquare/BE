@@ -68,9 +68,9 @@ public class NotificationService {
         return userId + "_" + System.currentTimeMillis();
     }
 
-    public void send(User receiver, AlarmType alarmType, String message, String senderUsername, String senderNickname, String senderProfileImageUrl, String url) {
+    public void send(User receiver, AlarmType alarmType, String message, String senderNickname, String senderProfileImageUrl, String url) {
         //send() 메서드는 Member 객체와 AlarmType 열거형, 알림 메시지(String)와 알림 상태(Boolean) 값을 인자로 받아 기능을 구현한다.
-        Notification notification = notificationRepository.save(createNotification(receiver, alarmType, message, senderUsername, senderNickname, senderProfileImageUrl, url));
+        Notification notification = notificationRepository.save(createNotification(receiver, alarmType, message, senderNickname, senderProfileImageUrl, url));
 
         // Notification 객체의 수신자 ID를 추출하고,
         String receiverId = String.valueOf(receiver.getId());
@@ -113,12 +113,11 @@ public class NotificationService {
                 .forEach(entry -> sendNotification(emitter, entry.getKey(), emitterId, entry.getValue()));
     }
 
-    private Notification createNotification(User receiver, AlarmType alarmType, String message, String senderUsername, String senderNickname, String senderProfileImageUrl, String url) {
+    private Notification createNotification(User receiver, AlarmType alarmType, String message, String senderNickname, String senderProfileImageUrl, String url) {
         return Notification.builder()
                 .receiver(receiver)
                 .alarmType(alarmType)
                 .message(message)
-                .senderUsername(senderUsername)
                 .senderNickname(senderNickname)
                 .senderProfileImageUrl(senderProfileImageUrl)
                 .url(url)

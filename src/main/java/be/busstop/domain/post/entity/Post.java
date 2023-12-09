@@ -75,7 +75,10 @@ public class Post extends Timestamped {
     @Enumerated(EnumType.STRING)
     private Status status = Status.IN_PROGRESS;
 
-    public Post(PostRequestDto postRequestDto, User user, List<String> imageUrlList ) {
+    @Column
+    private String chatroomId;
+
+    public Post(PostRequestDto postRequestDto, List<String> imageUrlList, User user, String chatroomId ) {
         this.user = user;
         this.category = postRequestDto.getCategory();
         this.title = postRequestDto.getTitle();
@@ -87,6 +90,7 @@ public class Post extends Timestamped {
         this.gender = this.user.getGender();
         this.profileImageUrl = this.user.getProfileImageUrl();
         this.imageUrlList = imageUrlList;
+        this.chatroomId = chatroomId;
 
     }
 

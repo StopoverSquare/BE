@@ -27,13 +27,10 @@ public class Notification extends Timestamped {
     @JoinColumn(name = "receiver_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE) //한 번 알림을 읽으면 읽음 표시되어 더이상 우리에게 반짝이지 않는다
     private User receiver;
-    @Column//    private Member receiver;
-    private String senderUsername;
     @Column
     private String senderNickname;
     @Column
     private String senderProfileImageUrl;
-
     @Column
     private Boolean isRead = false; //  읽었는지에 대한 여부를 나타낸다
 
@@ -48,15 +45,14 @@ public class Notification extends Timestamped {
     private String url;
 
     @Builder
-    public Notification(User receiver, Boolean readState,
+    public Notification(User receiver, Boolean isRead,
                         String message, AlarmType alarmType,
-                        String senderUsername, String senderNickname,
+                        String senderNickname,
                         String senderProfileImageUrl, String url) {
         this.receiver = receiver;
         this.isRead = false;
         this.message = message;
         this.alarmType = alarmType;
-        this.senderUsername = senderUsername;
         this.senderNickname = senderNickname;
         this.senderProfileImageUrl = senderProfileImageUrl;
         this.url = url;

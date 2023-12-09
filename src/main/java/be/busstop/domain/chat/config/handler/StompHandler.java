@@ -60,13 +60,13 @@ public class StompHandler implements ChannelInterceptor {
                 log.info("CONNECT 메소드 : CONNECT {}", jwtToken);
                 try {
                     jwtUtil.validateToken(jwtToken); // 유효성 검증
-                    String email = jwtUtil.getNicknameFromToken(jwtToken); // 토큰에서 사용자 이름 추출
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                    String nickname = jwtUtil.getNicknameFromToken(jwtToken); // 토큰에서 사용자 이름 추출
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(nickname);
                     if (userDetails != null) {
                         // 인증된 사용자이므로 필요한 작업을 수행합니다.
-                        log.info("CONNECT 메소드 : 인증된 사용자입니다: {}", email);
+                        log.info("CONNECT 메소드 : 인증된 사용자입니다: {}", nickname);
                     } else {
-                        log.error("CONNECT 메소드 : 인증되지 않은 사용자입니다: {}", email);
+                        log.error("CONNECT 메소드 : 인증되지 않은 사용자입니다: {}", nickname);
                         return null; // 인증되지 않은 사용자의 경우 연결을 막습니다.
                     }
                 } catch (ExpiredJwtException e) {
@@ -115,8 +115,8 @@ public class StompHandler implements ChannelInterceptor {
 
         // 채팅방의 인원수를 +1한다.
         redisChatRepository.plusUserCount(roomId);
-        String email = jwtProvider.getEmailFromToken(jwtToken); // jwtProvider를 이용해 토큰에서 사용자 이름 추출
-        User user = userRepository.findByEmail(email).orElseThrow(
+        String nickname = jwtUtil.getNicknameFromToken(jwtToken);
+        User user = userRepository.findByNickname(nickname).orElseThrow(
                 () -> new NullPointerException("왜 안돼"));
         user.setSessionId(sessionId);
         user.setRoomId(roomId);

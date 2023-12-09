@@ -1,5 +1,7 @@
 package be.busstop.domain.post.service;
 
+import be.busstop.domain.chat.entity.ChatRoomEntity;
+import be.busstop.domain.chat.service.ChatService;
 import be.busstop.domain.post.dto.PostRequestDto;
 import be.busstop.domain.post.dto.PostResponseDto;
 import be.busstop.domain.post.dto.PostSearchCondition;
@@ -12,6 +14,7 @@ import be.busstop.domain.user.repository.UserRepository;
 import be.busstop.global.exception.InvalidConditionException;
 import be.busstop.global.responseDto.ApiResponse;
 import be.busstop.global.security.jwt.JwtUtil;
+import be.busstop.global.utils.ResponseUtils;
 import be.busstop.global.utils.S3;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
@@ -43,6 +46,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostStatusRepository postStatusRepository;
     private final UserRepository userRepository;
+    private final ChatService chatService;
     private final JwtUtil jwtUtil;
     private final S3 s3;
 
@@ -76,9 +80,11 @@ public class PostService {
     public ApiResponse<?> createPost(PostRequestDto postRequestDto, List<MultipartFile> images, User user) {
         List<String> imageUrlList = s3.uploads(images);
         postRequestDto.setImageUrlList(imageUrlList);
-        postRepository.save(new Post(postRequestDto, user, imageUrlList));
+        ChatRoomEntity chatRoom = chatService.createRoomByPost(postRequestDto,user);
+        String roomId = chatRoom.getRoomId();
+        postRepository.save(new Post(postRequestDto, imageUrlList, user, roomId));
         log.info("'{}'님이 새로운 게시물을 생성했습니다.", user.getNickname());
-        return okWithMessage(POST_CREATE_SUCCESS);
+        return ResponseUtils.okWithMessage(POST_CREATE_SUCCESS);
     }
     @Transactional
     public ApiResponse<?> deletePost(Long postId, User user) {

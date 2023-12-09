@@ -54,7 +54,6 @@ public class NotificationResponseDto {
         this.readStatus = notification.getIsRead();
         this.alarmType = notification.getAlarmType();
         this.createdAt = Chrono.timesAgo(notification.getCreatedAt());
-        this.senderUsername = notification.getSenderUsername();
         this.senderNickname = notification.getSenderNickname();
         this.senderProfileImageUrl = notification.getSenderProfileImageUrl();
         this.url = notification.getUrl();
@@ -68,7 +67,6 @@ public class NotificationResponseDto {
                 .message(notification.getMessage())
                 .alarmType(notification.getAlarmType())
                 .readStatus(notification.getIsRead())
-                .senderUsername(notification.getSenderUsername())
                 .senderNickname(notification.getSenderNickname())
                 .senderProfileImageUrl(notification.getSenderProfileImageUrl())
                 .createdAt(createdAt)

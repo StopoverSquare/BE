@@ -23,13 +23,13 @@ public class NotificationController {
 
     @GetMapping(value = "/", produces = MediaType.TEXT_EVENT_STREAM_VALUE)///subscribe 엔드포인트로 들어오는 요청을 처리. produces 속성은 해당 메서드가 반환하는 데이터 형식을 지정
     @ResponseStatus(HttpStatus.OK)
-    public SseEmitter subscribe(@Parameter(hidden = true) @AuthenticationPrincipal UserDetailsImpl userDetails,
+    public SseEmitter subscribe( @AuthenticationPrincipal UserDetailsImpl userDetails,
                                 @RequestHeader(value = "Last-Event-ID", required = false, defaultValue = "") String lastEventId)  {
         return notificationService.subscribe(userDetails, lastEventId);
     }
 
     @GetMapping("/all")
-    public MessageStatusResponseDto<List<NotificationResponseDto>> getAllNotifications(@Parameter(hidden = true) @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public MessageStatusResponseDto<List<NotificationResponseDto>> getAllNotifications(@AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         return MessageStatusResponseDto.success(HttpStatus.OK, notificationService.getAllNotifications(userDetails.getUser().getId()));
     }
@@ -41,7 +41,7 @@ public class NotificationController {
 
     @DeleteMapping("/{notificationId}")
     public MessageStatusResponseDto<NotificationResponseDto> deleteNotification(@PathVariable Long notificationId,
-                                                                         @Parameter(hidden = true) @AuthenticationPrincipal UserDetailsImpl userDetails){
+                                                                                @AuthenticationPrincipal UserDetailsImpl userDetails){
         notificationService.deleteNotification(notificationId,userDetails.getUser());
         return MessageStatusResponseDto.success(HttpStatus.OK,null);
     }

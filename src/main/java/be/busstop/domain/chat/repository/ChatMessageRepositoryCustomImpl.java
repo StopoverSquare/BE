@@ -2,6 +2,8 @@ package be.busstop.domain.chat.repository;
 
 import be.busstop.domain.chat.dto.ChatMessage;
 import be.busstop.domain.chat.dto.ChatMessageSearchCondition;
+import be.busstop.domain.chat.dto.QChatMessage;
+import be.busstop.domain.chat.entity.QChatMessageEntity;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;

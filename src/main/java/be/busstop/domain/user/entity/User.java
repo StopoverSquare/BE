@@ -37,6 +37,11 @@ public class User {
     @Enumerated(value = EnumType.STRING)
     private UserRoleEnum role;
 
+    @Column
+    private String roomId;
+    @Column
+    private String sessionId;
+
     @Builder
     public User(String nickname, String age, String gender, String password, String profileImageUrl, Boolean social, UserRoleEnum role) {
         this.nickname = nickname;
@@ -46,6 +51,12 @@ public class User {
         this.profileImageUrl = profileImageUrl;
         this.social = social;
         this.role = role;
+    }
+    public void setSessionId(String sessionId){
+        this.sessionId = sessionId;
+    }
+    public void setRoomId(String roomId){
+        this.roomId = roomId;
     }
 
 }

@@ -3,7 +3,6 @@ package be.busstop.domain.chat.controller;
 
 import be.busstop.domain.chat.config.handler.StompHandler;
 import be.busstop.domain.chat.dto.ChatMessage;
-import be.busstop.domain.chat.dto.ChatReportRequestDto;
 import be.busstop.domain.chat.service.ChatService;
 import be.busstop.global.responseDto.ApiResponse;
 import be.busstop.global.security.UserDetailsImpl;
@@ -18,9 +17,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-
-import java.util.List;
 
 
 @Slf4j
@@ -56,14 +52,5 @@ public class ChatController {
                                          @PathVariable Long targetId,
                                       @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ApiResponse.success(stompHandler.disconnectUser(userDetails.getUser(),targetId,roomId));
-    }
-
-    @PostMapping("/chat/report/{messageId}")
-    @ResponseBody
-    public ApiResponse<?> reportPost(@PathVariable Long messageId,
-                                     @RequestPart(value = "data") ChatReportRequestDto chatReportRequestDto,
-                                     @RequestPart(value = "file") List<MultipartFile> images,
-                                     @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
-        return chatService.reportChat(messageId, chatReportRequestDto, images, userDetailsImpl.getUser());
     }
 }

@@ -36,8 +36,8 @@ public class JwtUtil {
     }
 
     // Header의 KEY 값
-    public static final String ACCESS_HEADER = "Access";
-    public static final String REFRESH_HEADER = "Refresh";
+    public static final String ACCESS_HEADER = "Authorization";
+    public static final String REFRESH_HEADER = "RefreshToken";
 
     // 사용자 권한 값의 KEY
     public static final String AUTHORIZATION_KEY = "auth";
