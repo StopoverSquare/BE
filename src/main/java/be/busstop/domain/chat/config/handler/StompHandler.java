@@ -60,7 +60,7 @@ public class StompHandler implements ChannelInterceptor {
                 log.info("CONNECT 메소드 : CONNECT {}", jwtToken);
                 try {
                     jwtUtil.validateToken(jwtToken); // 유효성 검증
-                    String nickname = jwtUtil.getNicknameFromToken(jwtToken); // 토큰에서 사용자 이름 추출
+                    String nickname = jwtUtil.getNickNameFromToken(jwtToken); // 토큰에서 사용자 이름 추출
                     UserDetails userDetails = userDetailsService.loadUserByUsername(nickname);
                     if (userDetails != null) {
                         // 인증된 사용자이므로 필요한 작업을 수행합니다.
@@ -115,7 +115,7 @@ public class StompHandler implements ChannelInterceptor {
 
         // 채팅방의 인원수를 +1한다.
         redisChatRepository.plusUserCount(roomId);
-        String nickname = jwtUtil.getNicknameFromToken(jwtToken);
+        String nickname = jwtUtil.getNickNameFromToken(jwtToken);
         User user = userRepository.findByNickname(nickname).orElseThrow(
                 () -> new NullPointerException("왜 안돼"));
         user.setSessionId(sessionId);

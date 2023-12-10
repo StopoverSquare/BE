@@ -56,11 +56,11 @@ public class PostService {
 
     @Transactional
     public ApiResponse<?> getSinglePost(Long postId, HttpServletRequest req) {
-        String token = jwtUtil.getAccessJwtFromHeader(req);
+        String token = jwtUtil.getTokenFromHeader(req);
         String subStringToken;
         boolean isComplete = false;
         if (token != null) {
-            subStringToken = jwtUtil.substringToken(token);
+            subStringToken = jwtUtil.substringHeaderToken(token);
             Claims userInfo = jwtUtil.getUserInfoFromToken(subStringToken);
             Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("?"));
             User user = userRepository.findByNickname(userInfo.getSubject()).orElseThrow(() -> new IllegalArgumentException("?"));

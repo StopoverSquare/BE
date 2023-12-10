@@ -64,7 +64,7 @@ public class ChatService {
     }
 
     public ChatMessage getUserDetail(ChatMessage message, String token) {
-        String nickname = jwtUtil.getNicknameFromToken(token.substring(9));
+        String nickname = jwtUtil.getNickNameFromToken(token.substring(9));
         String userId = jwtUtil.getUserIdFromToken(token.substring(9));
         String profileImageUrl = jwtUtil.getProfileImageUrlFromToken(token.substring(9));
         message.setSender(nickname);
