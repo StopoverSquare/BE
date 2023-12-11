@@ -103,7 +103,7 @@ public class JwtUtil {
     }
     public String getNickNameFromToken(String token) {
         Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
-        return claims.get("nickname", String.class);
+        return claims.getSubject();
     }
     public String getUserIdFromToken(String token) {
         Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
@@ -230,11 +230,6 @@ public class JwtUtil {
      */
     public Claims getUserInfoFromToken(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
-    }
-
-    public UserRoleEnum getUserRoleEnumFromToken(String token) {
-        Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
-        return UserRoleEnum.valueOf(claims.get(JwtUtil.AUTHORIZATION_KEY, String.class));
     }
 
     /**

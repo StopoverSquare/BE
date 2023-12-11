@@ -35,6 +35,9 @@ public class QNotification extends EntityPathBase<Notification> {
 
     public final StringPath message = createString("message");
 
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> modifiedAt = _super.modifiedAt;
+
     public final be.busstop.domain.user.entity.QUser receiver;
 
     public final StringPath senderNickname = createString("senderNickname");

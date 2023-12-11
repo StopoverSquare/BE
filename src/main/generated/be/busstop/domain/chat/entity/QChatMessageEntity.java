@@ -30,9 +30,10 @@ public class QChatMessageEntity extends EntityPathBase<ChatMessageEntity> {
 
     public final StringPath message = createString("message");
 
-    public final StringPath profileImageUrl = createString("profileImageUrl");
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> modifiedAt = _super.modifiedAt;
 
-    public final NumberPath<Long> reportCount = createNumber("reportCount", Long.class);
+    public final StringPath profileImageUrl = createString("profileImageUrl");
 
     public final StringPath roomId = createString("roomId");
 

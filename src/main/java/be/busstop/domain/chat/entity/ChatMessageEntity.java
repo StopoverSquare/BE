@@ -41,7 +41,6 @@ public class ChatMessageEntity extends Timestamped implements Serializable {
 
     private String profileImageUrl;
 
-    private long reportCount;
 
 
 
@@ -68,8 +67,5 @@ public class ChatMessageEntity extends Timestamped implements Serializable {
                 .profileImageUrl(profileImageUrl)
                 .createdAt(createdAt)
                 .build();
-    }
-    public void increaseReportCount(){
-        this.reportCount ++;
     }
 }

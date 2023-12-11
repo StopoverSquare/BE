@@ -39,6 +39,9 @@ public class QChatRoomEntity extends EntityPathBase<ChatRoomEntity> {
 
     public final StringPath MasterNickname = createString("MasterNickname");
 
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> modifiedAt = _super.modifiedAt;
+
     public final StringPath roomId = createString("roomId");
 
     public final StringPath title = createString("title");

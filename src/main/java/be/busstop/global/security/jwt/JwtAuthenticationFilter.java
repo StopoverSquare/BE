@@ -46,14 +46,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         setFilterProcessesUrl("/auth/login");
     }
 
-    /**
-     * 로그인 시도를 인증합니다.
-     *
-     * @param request  HttpServletRequest 객체
-     * @param response HttpServletResponse 객체
-     * @return Authentication 객체
-     * @throws AuthenticationException 인증 예외가 발생한 경우
-     */
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         log.info("로그인 시도");

@@ -114,10 +114,9 @@ public class StompHandler implements ChannelInterceptor {
         redisChatRepository.setUserEnterInfo(sessionId, roomId);
 
         // 채팅방의 인원수를 +1한다.
-        redisChatRepository.plusUserCount(roomId);
-        String nickname = jwtUtil.getNickNameFromToken(jwtToken);
-        User user = userRepository.findByNickname(nickname).orElseThrow(
-                () -> new NullPointerException("왜 안돼"));
+            String nickname = jwtUtil.getNickNameFromToken(jwtToken);
+            User user = userRepository.findByNickname(nickname).orElseThrow(
+                    () -> new NullPointerException("왜 안돼"));
         user.setSessionId(sessionId);
         user.setRoomId(roomId);
         userRepository.save(user);
@@ -130,7 +129,9 @@ public class StompHandler implements ChannelInterceptor {
             String roomId = redisChatRepository.getUserEnterRoomId(sessionId);
             // 채팅방의 인원수를 -1한다.
             redisChatRepository.minusUserCount(roomId);
-            User user = userRepository.findBySessionId(sessionId);
+            User user = userRepository.findByNickname(jwtUtil.getNickNameFromToken(jwtToken))
+                    .orElseThrow(
+                    () -> new NullPointerException("왜 안돼"));
             user.setSessionId(null);
             user.setRoomId(null);
 
