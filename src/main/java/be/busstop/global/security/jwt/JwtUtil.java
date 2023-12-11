@@ -3,12 +3,16 @@ package be.busstop.global.security.jwt;
 import be.busstop.domain.user.entity.UserRoleEnum;
 import be.busstop.domain.user.repository.UserRepository;
 import be.busstop.global.redis.RedisService;
+import be.busstop.global.utils.EncryptionUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.jackson.io.JacksonDeserializer;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,202 +30,347 @@ import java.util.Date;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class JwtUtil {
-    private final UserRepository userRepository;
-    private final RedisService redisService;
-
-    public JwtUtil(UserRepository userRepository, RedisService redisService) {
-        this.userRepository = userRepository;
-        this.redisService = redisService;
-    }
-
-    // Header의 KEY 값
-    public static final String ACCESS_HEADER = "Access";
-    public static final String REFRESH_HEADER = "Refresh";
-
-    // 사용자 권한 값의 KEY
+    public static final String AUTHORIZATION_HEADER = "Authorization";
+    public static final String REFRESHTOKEN_HEADER = "RefreshToken";
     public static final String AUTHORIZATION_KEY = "auth";
+    private static final String BEARER_PREFIX = "Bearer ";
+    private static final long ACCESS_TOKEN_EXPIRE_TIME = 20 * 60 * 1000L; // 20분
+    private static final long REFRESH_TOKEN_EXPIRE_TIME = 7 * 24 * 60 * 60 * 1000L; // 1주일
 
-    // Token 식별자
-    public static final String BEARER_PREFIX = "Bearer ";
+    private final RefreshTokenRedisRepository refreshTokenRedisRepository;
+    private final EncryptionUtils encryptionUtils;
 
-    private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
-
-    @Value("${jwt.secret.key}")
+    // @Value("${jwt.secret.key}")
+    @Value(value = "${jwt.secret.key}")
     private String secretKey;
-
     private Key key;
-
-    // 토큰 유효시간
-    public final long ACCESS_TOKEN_TIME = 60 * 30 * 1000L;
-    public final long REFRESH_TOKEN_TIME = 60 * 60 * 24 * 30 * 1000L;
-
-    // log 설정
-    public static final Logger logger = LoggerFactory.getLogger("JWT 관련 로그");
+    private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
+    private ObjectMapper customObjectMapper = new ObjectMapper();
 
     @PostConstruct
     public void init() {
-        byte[] bytes = Base64.getDecoder().decode(secretKey); // Base64로 Encode되어있는 secretKey를 Decode하여 사용
-        key = Keys.hmacShaKeyFor(bytes); // 새로운 시크릿키 인스턴스 생성
+        byte[] bytes = Base64.getDecoder().decode(secretKey);
+        key = Keys.hmacShaKeyFor(bytes);
     }
 
-    //JWT(토큰생성)
-    public String createToken(String username, UserRoleEnum role, long tokenValid) {
-        Date date = new Date();
-
-        return BEARER_PREFIX +
-                Jwts.builder()
-                        .setSubject(username) // 사용자 식별값(ID)
-                        .claim(AUTHORIZATION_KEY, role) // 사용자 권한
-                        .setExpiration(new Date(date.getTime() + tokenValid)) // 생성 시간에 대한 만료시간
-                        .setIssuedAt(date) // 발급일
-                        .signWith(key, signatureAlgorithm) // 암호화 알고리즘
-                        .compact(); //Actually builds the JWT and serializes it to a compact, URL-safe string according to the JWT Compact
+    /**
+     * 헤더에서 토큰을 추출합니다.
+     *
+     * @param token 토큰 문자열
+     * @return 추출된 토큰
+     * @throws NullPointerException 유효한 토큰이 아닌 경우 발생하는 예외
+     */
+    public String substringHeaderToken(String token) {
+        if (StringUtils.hasText(token) && token.startsWith(BEARER_PREFIX)) {
+            return token.substring(7);
+        }
+        throw new NullPointerException("유효한 토큰이 아닙니다.");
     }
 
-    // AccessToken 생성
-    public String createAccessToken(String nickname, UserRoleEnum role) {
-        return this.createToken(nickname, role, ACCESS_TOKEN_TIME);
-    }
-
-    // Refresh Token 생성
-    public String createRefreshToken(String nickname, UserRoleEnum role) {
-        return this.createToken(nickname, role, REFRESH_TOKEN_TIME);
-    }
-
-    // JWT Cookie에 저장
-    public void addJwtToCookie(String token, String tokenValue, HttpServletResponse res){
-        try{
-            log.info("쿠키주입성공");
+    /**
+     * 헤더에 JWT 토큰을 추가합니다.
+     *
+     * @param token    JWT 토큰
+     * @param response HttpServletResponse 객체
+     */
+    public void addJwtHeader(String token, HttpServletResponse response) {
+        try {
             token = URLEncoder.encode(token, "utf-8").replaceAll("\\+", "%20");
-
-            ResponseCookie cookie = ResponseCookie.from(tokenValue, token)
-                    .path("/")
-                    .sameSite("")
-                    .httpOnly(false)
-                    .secure(true)
-                    .build();
-
-            res.addHeader("Set-Cookie", cookie.toString());
-        }catch (UnsupportedEncodingException e){
-            logger.error(e.getMessage());
+            response.setHeader(AUTHORIZATION_HEADER, token);
+        } catch (UnsupportedEncodingException e) {
+            log.info(e.getMessage());
         }
     }
+    /**
+     * 헤더에 JWT 토큰을 추가합니다.
+     *
+     * @param accessToken  액세스 토큰
+     * @param refreshToken 리프레시 토큰
+     * @param response     HttpServletResponse 객체
+     */
+    public void addJwtHeaders(String accessToken, String refreshToken, HttpServletResponse response) {
+        try {
+            accessToken = URLEncoder.encode(accessToken, "utf-8").replaceAll("\\+", "%20");
+            refreshToken = URLEncoder.encode(refreshToken, "utf-8").replaceAll("\\+", "%20");
 
-    // 받아온 Cookie의 Value인 JWT 토큰 substring
-    public String substringToken(String tokenValue){
-        if(StringUtils.hasText(tokenValue) && tokenValue.startsWith(BEARER_PREFIX)){
-            return tokenValue.substring("Bearer ".length());
+            response.setHeader(AUTHORIZATION_HEADER, accessToken);
+            response.setHeader(REFRESHTOKEN_HEADER, refreshToken);
+        } catch (UnsupportedEncodingException e) {
+            log.error(e.getMessage());
         }
-        logger.error("Not Found Token");
-        throw new IllegalArgumentException("Not Found Token");
+    }
+    public String getNickNameFromToken(String token) {
+        Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+        return claims.getSubject();
+    }
+    public String getUserIdFromToken(String token) {
+        Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+        return claims.get("userId", String.class);
+    }
+    public String getProfileImageUrlFromToken(String token) {
+        Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+        return claims.get("profileImageUrl", String.class);
     }
 
-    // HttpServletRequest 에서 Cookie Value : JWT 가져오기
-    public String getTokenFromRequest(String tokenValue, HttpServletRequest req) {
-        Cookie[] cookies = req.getCookies();
-        if(cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals(tokenValue)) {
-                    try {
-                        return URLDecoder.decode(cookie.getValue(), "UTF-8"); // Encode 되어 넘어간 Value 다시 Decode
-                    } catch (UnsupportedEncodingException e) {
-                        return null;
-                    }
-                }
+    /**
+     * 헤더에서 토큰을 가져옵니다.
+     *
+     * @param req HttpServletRequest 객체
+     * @return 헤더에서 추출된 토큰
+     */
+    public String getTokenFromHeader(HttpServletRequest req) {
+        String token = req.getHeader(AUTHORIZATION_HEADER);
+        if (token != null) {
+            try {
+                return URLDecoder.decode(token, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                log.info(e.getMessage());
+                return null;
             }
         }
         return null;
     }
 
-    // header 에서 Access JWT 가져오기
-    public String getAccessJwtFromHeader(HttpServletRequest request) {
-        String bearerToken = request.getHeader(ACCESS_HEADER);
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
-            return bearerToken;
+    public String getRefreshTokenFromHeader(HttpServletRequest req) {
+        String refreshToken = req.getHeader(REFRESHTOKEN_HEADER);
+        if (refreshToken != null) {
+            try {
+                return URLDecoder.decode(refreshToken, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                log.info(e.getMessage());
+                return null;
+            }
         }
         return null;
     }
 
-    // header 에서 Refresh JWT 가져오기
-    public String getRefreshJwtFromHeader(HttpServletRequest request) {
-        String bearerToken = request.getHeader(REFRESH_HEADER);
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
-            return bearerToken;
-        }
-        return null;
+
+    /**
+     * 토큰을 생성합니다.
+     *
+     * @param username 사용자 이름
+     * @param role     사용자 역할
+     * @return 생성된 JWT 토큰
+     */
+    public String createToken(String userId, String username, UserRoleEnum role, String profileImageUrl) {
+        Date date = new Date();
+        return BEARER_PREFIX +
+                Jwts.builder()
+                        .setSubject(username)
+                        .claim("userId", userId)
+                        .claim(AUTHORIZATION_KEY, role)
+                        .claim("profileImageUrl", profileImageUrl)
+                        .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_EXPIRE_TIME)) // 만료시간
+                        .setIssuedAt(date)
+                        .signWith(key, signatureAlgorithm)
+                        .compact();
     }
 
-    // Token 검증
+    public String createRefreshToken(String userId, String username, UserRoleEnum role, String profileImageUrl) {
+        Date date = new Date();
+        String refreshToken = Jwts.builder()
+                .setSubject(username)
+                .claim("userId", userId)
+                .claim(AUTHORIZATION_KEY, role)
+                .claim("profileImageUrl", profileImageUrl)
+                .setExpiration(new Date(date.getTime() + REFRESH_TOKEN_EXPIRE_TIME)) // 만료시간
+                .setIssuedAt(date)
+                .signWith(key, signatureAlgorithm)
+                .compact();
+
+        try {
+            return encryptionUtils.encrypt(refreshToken); // encryptionUtils 인스턴스를 통해 encrypt 메서드 호출
+        } catch (Exception e) {
+            log.error("리프레시 토큰 암호화 실패: {}", e.getMessage());
+            throw new RuntimeException("리프레시 토큰 암호화 실패");
+        }
+    }
+    // JwtProvider 클래스에 추가 메소드
+    public String decryptRefreshToken(String encryptedRefreshToken) {
+        try {
+            return encryptionUtils.decrypt(encryptedRefreshToken);
+        } catch (Exception e) {
+            log.error("리프레시 토큰 복호화 실패: {}", e.getMessage());
+            throw new RuntimeException("리프레시 토큰 복호화 실패");
+        }
+    }
+
+
+
+    /**
+     * 토큰의 유효성을 검사합니다.
+     *
+     * @param token 검사할 JWT 토큰
+     * @return 토큰의 유효성 여부
+     */
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
-        } catch (SecurityException | MalformedJwtException | io.jsonwebtoken.security.SignatureException e) {
-            logger.error("Invalid JWT signature, 유효하지 않는 JWT 서명 입니다.");
+        } catch (SecurityException | MalformedJwtException e) {
+            log.info("Invalid JWT signature, 유효하지 않는 JWT 서명 입니다.");
         } catch (ExpiredJwtException e) {
-            logger.error("Expired JWT token, 만료된 JWT token 입니다.");
-            return false;
+            log.error("Expired JWT token, 만료된 JWT token 입니다.");
         } catch (UnsupportedJwtException e) {
-            logger.error("Unsupported JWT token, 지원되지 않는 JWT 토큰 입니다.");
+            log.info("Unsupported JWT token, 지원되지 않는 JWT 토큰 입니다.");
         } catch (IllegalArgumentException e) {
-            logger.error("JWT claims is empty, 잘못된 JWT 토큰 입니다.");
+            log.info("JWT claims is empty, 잘못된 JWT 토큰 입니다.");
         }
         return false;
     }
 
 
-    public boolean validateAllToken(String accessToken, String refreshToken, HttpServletResponse response) {
-        accessToken = accessToken.substring("Bearer ".length());
-        refreshToken = refreshToken.substring("Bearer ".length());
-
-        if(accessToken != null){ // accessToken 비어있지 않고
-            if(validateToken(accessToken) && redisService.getValue(accessToken) == null){ // access 검증, 로그아웃하지 않았다
-                return true;
-            }else if(!validateToken(accessToken) && refreshToken != null){ //검증은 안되는데 refresh 토큰이 값이 있어
-                boolean validateRefreshToken = validateToken(refreshToken); // refresh token 검증
-                boolean isRefreshToken = existsRefreshToken(refreshToken); // refresh token DB 존재
-                if(validateRefreshToken && isRefreshToken){
-                    String email = getUserInfoFromToken(refreshToken).getSubject();
-                    UserRoleEnum role = getRoles(email);
-                    String newAccessToken = createAccessToken(email, role);
-                    response.addHeader(JwtUtil.ACCESS_HEADER, newAccessToken);
-
-                    return true;
-                }
-                return false;
-            }
-        }
-        return false;
-    }
-
-    private boolean existsRefreshToken(String refreshToken) {
-        return redisService.getValue(refreshToken) != null;
-    }
-
-    public UserRoleEnum getRoles(String nickname){
-        return userRepository.findByNickname(nickname).get().getRole();
-    }
-
-    // token에서 사용자 정보 가져오기
-    public Claims getUserInfoFromToken(String token){
+    /**
+     * 토큰에서 사용자 정보를 추출합니다.
+     *
+     * @param token JWT 토큰
+     * @return 추출된 사용자 정보 (Claims 객체)
+     */
+    public Claims getUserInfoFromToken(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
     }
 
-    public Long getExpiration(String accessToken) {
-        Date expiration = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(accessToken)
-                .getBody()
-                .getExpiration();
-        Long now = new Date().getTime();
-        return expiration.getTime() - now;
+    /**
+     * 리프레시 토큰을 사용하여 새로운 액세스 토큰을 생성합니다.
+     *
+     * @param refreshToken 리프레시 토큰
+     * @return 새로운 액세스 토큰
+     */
+    public String createAccessTokenFromRefreshToken(String refreshToken) {
+        try {
+            refreshToken = refreshToken.replace("Bearer ", ""); // Bearer 접두사 제거
+
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .deserializeJsonWith(new JacksonDeserializer<>(customObjectMapper))
+                    .build()
+                    .parseClaimsJws(refreshToken)
+                    .getBody();
+
+            String id = claims.getSubject();
+            UserRoleEnum role = UserRoleEnum.valueOf(claims.get(AUTHORIZATION_KEY, String.class));
+            Date date = new Date();
+
+            String newAccessToken = BEARER_PREFIX +
+                    Jwts.builder()
+                            .setSubject(id) // 사용자 식별
+                            .claim("userId", claims.get("userId", String.class)) // userId 추가
+                            .claim(AUTHORIZATION_KEY, role)
+                            .claim("profileImageUrl", claims.get("profileImageUrl", String.class))
+                            .setExpiration(new Date(date.getTime() + 5 * 60 * 1000L)) // 만료 시간
+                            .setIssuedAt(date)
+                            .signWith(key, signatureAlgorithm)
+                            .compact();
+
+            log.info("리프레시 토큰으로부터 새로운 액세스 토큰 생성");
+            return newAccessToken;
+        } catch (Exception e) {
+            log.error("리프레시 토큰으로부터 액세스 토큰 생성 실패: {}", e.getMessage());
+            throw new RuntimeException("리프레시 토큰으로부터 액세스 토큰 생성 실패");
+        }
+    }
+    /**
+     * 주어진 리프레시 토큰을 사용하여 새로운 액세스 토큰을 생성하고 인증 설정을 갱신합니다.
+     *
+     * @param refreshTokenValue 복호화된 리프레시 토큰
+     * @param response          HttpServletResponse 객체
+     */
+    public void refreshAccessToken(String refreshTokenValue, HttpServletResponse response) {
+        if (StringUtils.hasText(refreshTokenValue)) {
+            String decryptedRefreshToken = decryptRefreshToken(refreshTokenValue);
+            log.info("리프레시 토큰 넘어왔나?={}", decryptedRefreshToken);
+
+            if (StringUtils.hasText(decryptedRefreshToken) && validateToken(decryptedRefreshToken)) {
+                String redisStoredRefreshToken = getRefreshTokenFromRedis(decryptedRefreshToken);
+
+                if (redisStoredRefreshToken != null && validateToken(redisStoredRefreshToken)) {
+                    String RefreshTokenByUserId = getUserIdFromToken(decryptedRefreshToken);
+                    String RefreshTokenByNickname = getNickNameFromToken(decryptedRefreshToken);
+
+                    String redisRfTokenByUserId = getUserIdFromToken(redisStoredRefreshToken);
+                    String redisRfTokenByNickname = getNickNameFromToken(redisStoredRefreshToken);
+
+                    log.info("레디스에서 리프레시 토큰 넘어왔나?={}", redisStoredRefreshToken);
+
+                    if (RefreshTokenByUserId.equals(redisRfTokenByUserId)
+                            && RefreshTokenByNickname.equals(redisRfTokenByNickname)) {
+                        String newAccessToken = createAccessTokenFromRefreshToken(decryptedRefreshToken);
+                        addJwtHeader(newAccessToken, response);
+                        log.info("리프레시 토큰으로 새로운 액세스 토큰 발급");
+                    } else {
+                        log.error("레디스에 저장된 리프레시 토큰과 정보가 일치하지 않습니다.");
+                    }
+                } else {
+                    log.error("레디스에 저장된 리프레시 토큰이 없습니다.");
+                }
+            } else {
+                log.error("리프레시 토큰이 유효하지 않습니다.");
+            }
+        } else {
+            log.error("리프레시 토큰이 없습니다.");
+        }
     }
 
-    public String getNicknameFromToken(String token){
-        String subToken = substringToken(token);
-        Claims info = getUserInfoFromToken(subToken);
-        return info.getSubject();
+
+
+    public String getRefreshTokenFromRedis(String decryptedRefreshToken) {
+        String refreshToken = null;
+        try {
+            Claims claims = getUserInfoFromToken(decryptedRefreshToken);
+
+            if (claims != null) {
+                String refreshTokenKey = claims.getSubject(); // 리프레시 토큰 키 생성
+                log.info("레디스에서 키 값으로 값 조회를 시도 중: " + refreshTokenKey);
+                refreshToken = refreshTokenRedisRepository.findById(refreshTokenKey)
+                        .map(RefreshToken::getRefreshToken)
+                        .orElse(null);
+                if (refreshToken != null) {
+                    log.info("레디스에서 리프레시 토큰 조회 성공");
+                    // 리프레시 토큰 복호화를 위한 부분 추가
+                    refreshToken = decryptRefreshToken(refreshToken);
+                } else {
+                    log.error("레디스에서 리프레시 토큰을 찾을 수 없습니다.");
+                }
+            }
+        } catch (Exception e) {
+            log.error("레디스에서 리프레시 토큰 조회 실패 : {}", e.getMessage());
+        }
+        log.info("리프레시 토큰 조회 성공");
+        return refreshToken;
+    }
+
+
+    public void expireAccessToken(String token, HttpServletResponse response) {
+        try {
+            // 디코딩된 토큰 추출
+            String decodedToken = URLDecoder.decode(token, "UTF-8");
+            // "Bearer " 제거
+            String cleanToken = decodedToken.replace("Bearer ", "");
+            Claims claims = getUserInfoFromToken(cleanToken);
+            if (claims != null) {
+                // 기존 토큰의 만료 시간을 현재 시간으로 설정하여 즉시 만료
+                Date expiration = new Date();
+
+                // 기존 토큰을 업데이트하여 만료시킴
+                String expireAccessToken =
+                        BEARER_PREFIX +
+                                Jwts.builder()
+                                        .setClaims(claims)
+                                        .setExpiration(expiration)
+                                        .signWith(key, signatureAlgorithm)
+                                        .compact();
+
+                // 새로 생성된 액세스 토큰으로 헤더 업데이트
+                addJwtHeader(expireAccessToken, response);
+
+                log.info("액세스 토큰을 강제로 만료시킴");
+            }
+        } catch (Exception e) {
+            log.error("액세스 토큰 만료 실패: {}", e.getMessage());
+            throw new RuntimeException("액세스 토큰 만료 실패");
+        }
     }
 }
+

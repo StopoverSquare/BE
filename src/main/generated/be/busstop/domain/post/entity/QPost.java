@@ -28,6 +28,8 @@ public class QPost extends EntityPathBase<Post> {
 
     public final EnumPath<Category> category = createEnum("category", Category.class);
 
+    public final StringPath chatroomId = createString("chatroomId");
+
     public final StringPath content = createString("content");
 
     //inherited
@@ -42,6 +44,9 @@ public class QPost extends EntityPathBase<Post> {
     public final ListPath<String, StringPath> imageUrlList = this.<String, StringPath>createList("imageUrlList", String.class, StringPath.class, PathInits.DIRECT2);
 
     public final StringPath location = createString("location");
+
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> modifiedAt = _super.modifiedAt;
 
     public final StringPath nickname = createString("nickname");
 

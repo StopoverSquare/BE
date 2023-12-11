@@ -1,5 +1,6 @@
 package be.busstop.global.utils;
 
+import be.busstop.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,6 +20,12 @@ public abstract class Timestamped {
     @Column(updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     public LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Column
+    @Temporal(TemporalType.TIMESTAMP)
+    public LocalDateTime modifiedAt;
+
 
 }
 

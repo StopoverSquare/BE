@@ -19,11 +19,19 @@ public class QUser extends EntityPathBase<User> {
 
     public static final QUser user = new QUser("user");
 
+    public final be.busstop.global.utils.QTimestamped _super = new be.busstop.global.utils.QTimestamped(this);
+
     public final StringPath age = createString("age");
+
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
 
     public final StringPath gender = createString("gender");
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
+
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> modifiedAt = _super.modifiedAt;
 
     public final StringPath nickname = createString("nickname");
 
@@ -33,7 +41,9 @@ public class QUser extends EntityPathBase<User> {
 
     public final EnumPath<UserRoleEnum> role = createEnum("role", UserRoleEnum.class);
 
-    public final BooleanPath social = createBoolean("social");
+    public final StringPath roomId = createString("roomId");
+
+    public final StringPath sessionId = createString("sessionId");
 
     public QUser(String variable) {
         super(User.class, forVariable(variable));

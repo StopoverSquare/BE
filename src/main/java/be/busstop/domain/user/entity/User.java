@@ -1,18 +1,22 @@
 package be.busstop.domain.user.entity;
 
+import be.busstop.global.utils.Timestamped;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import static jakarta.persistence.GenerationType.IDENTITY;
+
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User {
+@Table(name = "users")
+public class User extends Timestamped {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = IDENTITY)
+    @Column(name = "user_id")
     private Long id;
 
     @Column(nullable = false, unique = true)
@@ -30,22 +34,30 @@ public class User {
     @Column()
     private String profileImageUrl;
 
-    @Column(nullable = false)
-    private Boolean social;
 
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     private UserRoleEnum role;
 
+    @Column
+    private String roomId;
+    @Column
+    private String sessionId;
+
     @Builder
-    public User(String nickname, String age, String gender, String password, String profileImageUrl, Boolean social, UserRoleEnum role) {
+    public User(String nickname, String age, String gender, String password, String profileImageUrl, UserRoleEnum role) {
         this.nickname = nickname;
         this.age = age;
         this.gender = gender;
         this.password = password;
         this.profileImageUrl = profileImageUrl;
-        this.social = social;
         this.role = role;
+    }
+    public void setSessionId(String sessionId){
+        this.sessionId = sessionId;
+    }
+    public void setRoomId(String roomId){
+        this.roomId = roomId;
     }
 
 }

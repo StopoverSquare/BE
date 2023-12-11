@@ -3,24 +3,21 @@ package be.busstop.global.security;
 import be.busstop.domain.user.entity.User;
 import be.busstop.domain.user.entity.UserRoleEnum;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 public class UserDetailsImpl implements UserDetails {
+
     private final User user;
 
     public UserDetailsImpl(User user) {
         this.user = user;
     }
-
     public User getUser() {
         return user;
-    }
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
     }
 
     @Override
@@ -28,13 +25,24 @@ public class UserDetailsImpl implements UserDetails {
         return user.getPassword();
     }
 
-    @Override
-    public String getUsername() {
+    public String getUsername(){
         return user.getNickname();
     }
 
-    public UserRoleEnum getRole(){
-        return user.getRole();
+    public Long getUserId() {
+        return  user.getId();
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        UserRoleEnum role = user.getRole();
+        String authority = role.getAuthority();
+
+        SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(authority);
+        Collection<GrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(simpleGrantedAuthority);
+
+        return authorities;
     }
 
     @Override
