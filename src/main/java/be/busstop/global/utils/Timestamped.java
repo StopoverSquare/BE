@@ -1,6 +1,5 @@
 package be.busstop.global.utils;
 
-import be.busstop.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

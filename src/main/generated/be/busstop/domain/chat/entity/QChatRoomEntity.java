@@ -22,7 +22,7 @@ public class QChatRoomEntity extends EntityPathBase<ChatRoomEntity> {
 
     public final be.busstop.global.utils.QTimestamped _super = new be.busstop.global.utils.QTimestamped(this);
 
-    public final ListPath<ChatRoomParticipant, QChatRoomParticipant> chatRoomparticipants = this.<ChatRoomParticipant, QChatRoomParticipant>createList("chatRoomparticipants", ChatRoomParticipant.class, QChatRoomParticipant.class, PathInits.DIRECT2);
+    public final ListPath<ChatRoomParticipant, QChatRoomParticipant> chatRoomParticipants = this.<ChatRoomParticipant, QChatRoomParticipant>createList("chatRoomParticipants", ChatRoomParticipant.class, QChatRoomParticipant.class, PathInits.DIRECT2);
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;

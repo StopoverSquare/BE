@@ -99,7 +99,7 @@ public class StompHandler implements ChannelInterceptor {
         }
         Long userId = Long.valueOf(jwtUtil.getUserIdFromToken(jwtToken));
         // 채팅방의 참가자 목록에서 세션 ID와 일치하는 참가자 정보 가져오기
-        ChatRoomParticipant participant = chatRoomEntity.getChatRoomparticipants().stream()
+        ChatRoomParticipant participant = chatRoomEntity.getChatRoomParticipants().stream()
                 .filter(p -> p.getUserId().equals(userId))
                 .findFirst()
                 .orElse(null);
@@ -114,6 +114,7 @@ public class StompHandler implements ChannelInterceptor {
         redisChatRepository.setUserEnterInfo(sessionId, roomId);
 
         // 채팅방의 인원수를 +1한다.
+            redisChatRepository.plusUserCount(roomId);
             String nickname = jwtUtil.getNickNameFromToken(jwtToken);
             User user = userRepository.findByNickname(nickname).orElseThrow(
                     () -> new NullPointerException("왜 안돼"));
@@ -161,7 +162,7 @@ public class StompHandler implements ChannelInterceptor {
 
         // 현재 유저가 채팅방의 방장인지 확인
         if (chatRoomEntity.getMasterId().equals(user.getId())) {
-            ChatRoomParticipant targetParticipant = chatRoomEntity.getChatRoomparticipants().stream()
+            ChatRoomParticipant targetParticipant = chatRoomEntity.getChatRoomParticipants().stream()
                     .filter(participant -> participant.getUserId().equals(targetUser.getId()))
                     .findFirst()
                     .orElse(null);
@@ -175,7 +176,7 @@ public class StompHandler implements ChannelInterceptor {
             forceDisconnectUser(targetSessionId);
 
             // 채팅방에서 해당 참가자 제거
-            chatRoomEntity.getChatRoomparticipants().remove(targetParticipant);
+            chatRoomEntity.getChatRoomParticipants().remove(targetParticipant);
             chatRoomRepository.save(chatRoomEntity);
 
             return ResponseEntity.ok(targetUser.getNickname() + "님을 강제로 강퇴했습니다.");

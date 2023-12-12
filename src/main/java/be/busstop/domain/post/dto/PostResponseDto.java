@@ -32,6 +32,8 @@ public class PostResponseDto {
     private int views;
     private String location;
     private String profileImageUrl;
+    private String chatroomId;
+    private List<String> chatParticipants;
 
     // 전체 조회
     @QueryProjection
@@ -55,7 +57,7 @@ public class PostResponseDto {
     }
 
     // 상세 조회
-    public PostResponseDto(Post post, Boolean isComplete){
+    public PostResponseDto(Post post, Boolean isComplete,  List<String> chatParticipants){
         this.id = post.getId();
         this.userId = post.getUser().getId();
         this.category = post.getCategory();
@@ -76,6 +78,8 @@ public class PostResponseDto {
         if (post.getStatus() != null) {
             this.status = post.getStatus().name();
         }
+        this.chatroomId = post.getChatroomId();
+        this.chatParticipants = chatParticipants;
     }
     // 랜덤 조회
     public PostResponseDto(Long id, Long userId, Category category, String title,
