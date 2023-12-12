@@ -1,6 +1,8 @@
 package be.busstop.domain.post.service;
 
 import be.busstop.domain.chat.entity.ChatRoomEntity;
+import be.busstop.domain.chat.entity.ChatRoomParticipant;
+import be.busstop.domain.chat.repository.ChatRoomRepository;
 import be.busstop.domain.chat.service.ChatService;
 import be.busstop.domain.post.dto.PostRequestDto;
 import be.busstop.domain.post.dto.PostResponseDto;
@@ -45,6 +47,7 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final PostStatusRepository postStatusRepository;
+    private final ChatRoomRepository chatRoomRepository;
     private final UserRepository userRepository;
     private final ChatService chatService;
     private final JwtUtil jwtUtil;
@@ -69,12 +72,34 @@ public class PostService {
                 isComplete = true;
             }
         }
-        Post post = postRepository.findDetailPost(postId).orElseThrow(() ->
+        Post post = postRepository.findDetailPostWithParticipants(postId).orElseThrow(() ->
                 new InvalidConditionException(POST_NOT_EXIST));
+
         log.info("게시물 ID '{}' 조회 성공", postId);
         post.increaseViews();
-        return ok(new PostResponseDto(post, isComplete));
+
+        // 채팅방 참여자의 닉네임 가져오기
+        List<String> chatParticipants = getChatParticipants(post.getChatroomId());
+
+        return ok(new PostResponseDto(post, isComplete, chatParticipants));
     }
+
+    private List<String> getChatParticipants(String chatRoomId) {
+        ChatRoomEntity chatRoom = chatRoomRepository.findById(chatRoomId).orElse(null);
+        if (chatRoom != null) {
+            return chatRoom.getChatRoomParticipants().stream()
+                    .map(participant -> {
+                        String userInfo = participant.getNickname() +
+                                ", " +
+                                participant.getAge() + ", " +
+                                participant.getGender();
+                        return userInfo;
+                    })
+                    .collect(Collectors.toList());
+        }
+        return List.of();
+    }
+
 
     @Transactional
     public ApiResponse<?> createPost(PostRequestDto postRequestDto, List<MultipartFile> images, User user) {

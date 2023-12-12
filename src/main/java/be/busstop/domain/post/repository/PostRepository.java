@@ -13,6 +13,12 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostRepositor
     @Query("select p from Post p left join fetch p.imageUrlList il where p.id = :postId")
     Optional<Post> findDetailPost(@Param("postId") Long postId);
 
+    @Query("SELECT p FROM Post p " +
+            "LEFT JOIN FETCH p.imageUrlList " +
+            "WHERE p.id = :postId")
+    Optional<Post> findDetailPostWithParticipants(@Param("postId") Long postId);
+
+
     Post findByChatroomId(String roomId);
 
 }

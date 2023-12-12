@@ -31,12 +31,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static be.busstop.global.stringCode.SuccessCodeEnum.CHAT_REPORT_SUCCESS;
 
 @RequiredArgsConstructor
 @Service
@@ -97,7 +95,7 @@ public class ChatService {
         ChatRoomEntity chatRoomEntity = chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new NotFoundException("채팅방을 찾을 수 없습니다."));
 
-        LocalDateTime userEntryTime = chatRoomEntity.getChatRoomparticipants().stream()
+        LocalDateTime userEntryTime = chatRoomEntity.getChatRoomParticipants().stream()
                 .filter(participant -> participant.getNickname().equals(user.getNickname()))
                 .findFirst()
                 .map(ChatRoomParticipant::getEntryTime)
@@ -126,7 +124,7 @@ public class ChatService {
     public ResponseEntity<List<ChatRoom>> getUserRooms(User user) {
         Long userId = user.getId();
 
-        List<ChatRoomEntity> chatRoomEntities = chatRoomRepository.findByChatRoomparticipants_UserId(userId);
+        List<ChatRoomEntity> chatRoomEntities = chatRoomRepository.findByChatRoomParticipants_UserId(userId);
 
         List<ChatRoom> userRooms = chatRoomEntities.stream()
                 .map(chatRoomEntity -> {
@@ -135,7 +133,7 @@ public class ChatService {
                     chatRoom.setTitleImageUrl(chatRoomEntity.getTitleImageUrl());
                     chatRoom.setUserCount(redisChatRepository.getUserCount(chatRoom.getRoomId()));
                     chatRoom.setParticipants(
-                            chatRoomEntity.getChatRoomparticipants().stream()
+                            chatRoomEntity.getChatRoomParticipants().stream()
                                     .map(ChatRoomParticipant::getNickname)
                                     .collect(Collectors.toList())
                     );
@@ -165,10 +163,12 @@ public class ChatService {
         ChatRoomParticipant participant = new ChatRoomParticipant();
         participant.setUserId(user.getId());
         participant.setNickname(user.getNickname());
+        participant.setAge(user.getAge());
+        participant.setGender(user.getGender());
         participant.setEntryTime(LocalDateTime.now());
         participant.setChatRoom(chatRoomEntity);
 
-        chatRoomEntity.getChatRoomparticipants().add(participant);
+        chatRoomEntity.getChatRoomParticipants().add(participant);
 
         chatRoomRepository.save(chatRoomEntity);
         redisChatRepository.addUserToRoom(chatRoomEntity.getRoomId(), user.getNickname());
@@ -190,7 +190,7 @@ public class ChatService {
 
         ChatRoomEntity chatRoomEntity = chatRoomRepository.findById(roomId).orElse(null);
         if (chatRoomEntity != null) {
-            List<ChatRoomParticipant> participants = chatRoomEntity.getChatRoomparticipants();
+            List<ChatRoomParticipant> participants = chatRoomEntity.getChatRoomParticipants();
             boolean isNewParticipant = participants.stream()
                     .noneMatch(participant -> participant.getUserId().equals(newUser.getId()));
 
@@ -199,6 +199,8 @@ public class ChatService {
                 participant.setChatRoom(chatRoomEntity);
                 participant.setUserId(newUser.getId());
                 participant.setNickname(newUser.getNickname());
+                participant.setAge(newUser.getAge());
+                participant.setGender(newUser.getGender());
                 participant.setEntryTime(LocalDateTime.now());
 
                 participants.add(participant);
@@ -233,7 +235,7 @@ public class ChatService {
 
         ChatRoomEntity chatRoomEntity = chatRoomRepository.findById(roomId).orElse(null);
         if (chatRoomEntity != null) {
-            List<ChatRoomParticipant> participants = chatRoomEntity.getChatRoomparticipants();
+            List<ChatRoomParticipant> participants = chatRoomEntity.getChatRoomParticipants();
             ChatRoomParticipant leavingParticipant = participants.stream()
                     .filter(participant -> participant.getNickname().equals(leavingUserNickname))
                     .findFirst()
@@ -287,7 +289,7 @@ public class ChatService {
         participant.setChatRoom(chatRoomEntity);
         participant.setNickname(nickname);
         participant.setEntryTime(LocalDateTime.now());
-        chatRoomEntity.getChatRoomparticipants().add(participant);
+        chatRoomEntity.getChatRoomParticipants().add(participant);
 
         chatRoomEntity.setTitle(nickname);
         chatRoomRepository.save(chatRoomEntity);

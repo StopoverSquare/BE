@@ -37,7 +37,7 @@ public class ChatRoomEntity extends Timestamped implements Serializable {
 
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
     @Fetch(FetchMode.JOIN)
-    private List<ChatRoomParticipant> chatRoomparticipants = new ArrayList<>();
+    private List<ChatRoomParticipant> chatRoomParticipants = new ArrayList<>();
 
     @Column(name = "last_message")
     private String lastMessage; // 가장 최근 메시지 내용

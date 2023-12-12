@@ -55,13 +55,7 @@ public class JwtUtil {
         key = Keys.hmacShaKeyFor(bytes);
     }
 
-    /**
-     * 헤더에서 토큰을 추출합니다.
-     *
-     * @param token 토큰 문자열
-     * @return 추출된 토큰
-     * @throws NullPointerException 유효한 토큰이 아닌 경우 발생하는 예외
-     */
+
     public String substringHeaderToken(String token) {
         if (StringUtils.hasText(token) && token.startsWith(BEARER_PREFIX)) {
             return token.substring(7);
@@ -69,12 +63,7 @@ public class JwtUtil {
         throw new NullPointerException("유효한 토큰이 아닙니다.");
     }
 
-    /**
-     * 헤더에 JWT 토큰을 추가합니다.
-     *
-     * @param token    JWT 토큰
-     * @param response HttpServletResponse 객체
-     */
+
     public void addJwtHeader(String token, HttpServletResponse response) {
         try {
             token = URLEncoder.encode(token, "utf-8").replaceAll("\\+", "%20");
@@ -83,13 +72,7 @@ public class JwtUtil {
             log.info(e.getMessage());
         }
     }
-    /**
-     * 헤더에 JWT 토큰을 추가합니다.
-     *
-     * @param accessToken  액세스 토큰
-     * @param refreshToken 리프레시 토큰
-     * @param response     HttpServletResponse 객체
-     */
+
     public void addJwtHeaders(String accessToken, String refreshToken, HttpServletResponse response) {
         try {
             accessToken = URLEncoder.encode(accessToken, "utf-8").replaceAll("\\+", "%20");
@@ -114,12 +97,6 @@ public class JwtUtil {
         return claims.get("profileImageUrl", String.class);
     }
 
-    /**
-     * 헤더에서 토큰을 가져옵니다.
-     *
-     * @param req HttpServletRequest 객체
-     * @return 헤더에서 추출된 토큰
-     */
     public String getTokenFromHeader(HttpServletRequest req) {
         String token = req.getHeader(AUTHORIZATION_HEADER);
         if (token != null) {
@@ -146,14 +123,6 @@ public class JwtUtil {
         return null;
     }
 
-
-    /**
-     * 토큰을 생성합니다.
-     *
-     * @param username 사용자 이름
-     * @param role     사용자 역할
-     * @return 생성된 JWT 토큰
-     */
     public String createToken(String userId, String username, UserRoleEnum role, String profileImageUrl) {
         Date date = new Date();
         return BEARER_PREFIX +
@@ -197,14 +166,6 @@ public class JwtUtil {
         }
     }
 
-
-
-    /**
-     * 토큰의 유효성을 검사합니다.
-     *
-     * @param token 검사할 JWT 토큰
-     * @return 토큰의 유효성 여부
-     */
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
@@ -222,22 +183,11 @@ public class JwtUtil {
     }
 
 
-    /**
-     * 토큰에서 사용자 정보를 추출합니다.
-     *
-     * @param token JWT 토큰
-     * @return 추출된 사용자 정보 (Claims 객체)
-     */
     public Claims getUserInfoFromToken(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
     }
 
-    /**
-     * 리프레시 토큰을 사용하여 새로운 액세스 토큰을 생성합니다.
-     *
-     * @param refreshToken 리프레시 토큰
-     * @return 새로운 액세스 토큰
-     */
+
     public String createAccessTokenFromRefreshToken(String refreshToken) {
         try {
             refreshToken = refreshToken.replace("Bearer ", ""); // Bearer 접두사 제거
@@ -271,12 +221,7 @@ public class JwtUtil {
             throw new RuntimeException("리프레시 토큰으로부터 액세스 토큰 생성 실패");
         }
     }
-    /**
-     * 주어진 리프레시 토큰을 사용하여 새로운 액세스 토큰을 생성하고 인증 설정을 갱신합니다.
-     *
-     * @param refreshTokenValue 복호화된 리프레시 토큰
-     * @param response          HttpServletResponse 객체
-     */
+
     public void refreshAccessToken(String refreshTokenValue, HttpServletResponse response) {
         if (StringUtils.hasText(refreshTokenValue)) {
             String decryptedRefreshToken = decryptRefreshToken(refreshTokenValue);
