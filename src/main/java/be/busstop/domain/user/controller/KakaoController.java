@@ -26,7 +26,6 @@ public class KakaoController {
     @PostMapping("/kakao")
     public ApiResponse<?> kakaoCallback(@RequestParam String code, HttpServletResponse response) throws IOException {
         log.info("카카오 로그인 콜백 요청 받음. 인증 코드: {}", code);
-
         // 카카오 로그인에 성공한 후, 사용자 정보 가져오기
         User user = kakaoService.kakaoSignUpOrLinkUser(code);
         log.info("카카오 로그인 성공. 유저 ID: {}", user.getId());

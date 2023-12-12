@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -100,6 +101,26 @@ public class PostResponseDto {
         this.endDate = endDate;
         this.location = location;
         this.profileImageUrl = profileImageUrl;
+    }
+    // 마이페이지
+    public PostResponseDto(Long id, Long userId, Category category,String status, String title,
+                           String nickname, String age, String gender,
+                       String location,List<String> imageUrlList, String profileImageUrl,int views, LocalDateTime createdAt) {
+        this.id = id;
+        this.userId = userId;
+        this.category = category;
+        this.status = status;
+        this.title = title;
+        this.nickname = nickname;
+        this.age = age;
+        this.gender = gender;
+        this.location = location;
+        this.imageUrlList = imageUrlList.stream().limit(1)
+                .map(String::new)
+                .collect(Collectors.toList());
+        this.profileImageUrl = profileImageUrl;
+        this.views = views;
+        this.createdAt = createdAt;
     }
 }
 
