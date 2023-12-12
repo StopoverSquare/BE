@@ -31,12 +31,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static be.busstop.global.stringCode.SuccessCodeEnum.CHAT_REPORT_SUCCESS;
 
 @RequiredArgsConstructor
 @Service
@@ -165,6 +163,8 @@ public class ChatService {
         ChatRoomParticipant participant = new ChatRoomParticipant();
         participant.setUserId(user.getId());
         participant.setNickname(user.getNickname());
+        participant.setAge(user.getAge());
+        participant.setGender(user.getGender());
         participant.setEntryTime(LocalDateTime.now());
         participant.setChatRoom(chatRoomEntity);
 
@@ -199,6 +199,8 @@ public class ChatService {
                 participant.setChatRoom(chatRoomEntity);
                 participant.setUserId(newUser.getId());
                 participant.setNickname(newUser.getNickname());
+                participant.setAge(newUser.getAge());
+                participant.setGender(newUser.getGender());
                 participant.setEntryTime(LocalDateTime.now());
 
                 participants.add(participant);

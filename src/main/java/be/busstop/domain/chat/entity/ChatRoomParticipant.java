@@ -24,6 +24,10 @@ public class ChatRoomParticipant {
     private Long userId;
     @Column
     private String nickname;
+    @Column
+    private String age;
+    @Column
+    private String gender;
     @Column(name = "entry_time")
     private LocalDateTime entryTime;
 }

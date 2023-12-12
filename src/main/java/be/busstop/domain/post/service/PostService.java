@@ -88,11 +88,18 @@ public class PostService {
         ChatRoomEntity chatRoom = chatRoomRepository.findById(chatRoomId).orElse(null);
         if (chatRoom != null) {
             return chatRoom.getChatRoomParticipants().stream()
-                    .map(ChatRoomParticipant::getNickname)
+                    .map(participant -> {
+                        String userInfo = participant.getNickname() +
+                                ", " +
+                                participant.getAge() + ", " +
+                                participant.getGender();
+                        return userInfo;
+                    })
                     .collect(Collectors.toList());
         }
-        return List.of(); // 채팅방이 없거나 참여자가 없는 경우 빈 리스트 반환
+        return List.of();
     }
+
 
     @Transactional
     public ApiResponse<?> createPost(PostRequestDto postRequestDto, List<MultipartFile> images, User user) {

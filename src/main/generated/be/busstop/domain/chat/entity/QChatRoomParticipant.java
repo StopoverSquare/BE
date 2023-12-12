@@ -22,9 +22,13 @@ public class QChatRoomParticipant extends EntityPathBase<ChatRoomParticipant> {
 
     public static final QChatRoomParticipant chatRoomParticipant = new QChatRoomParticipant("chatRoomParticipant");
 
+    public final StringPath age = createString("age");
+
     public final QChatRoomEntity chatRoom;
 
     public final DateTimePath<java.time.LocalDateTime> entryTime = createDateTime("entryTime", java.time.LocalDateTime.class);
+
+    public final StringPath gender = createString("gender");
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
