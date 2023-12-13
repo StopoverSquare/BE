@@ -25,10 +25,10 @@ public class User extends Timestamped {
     @Column(nullable = false, unique = true)
     private String nickname;
 
-    @Column(nullable = false)
+    @Column
     private String age;
 
-    @Column(nullable = false)
+    @Column
     private String gender;
 
     @Column(nullable = false)

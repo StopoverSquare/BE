@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PostSearchCondition {
     private String location;
-    private String StartDate;
+    private String endDate;
     private String category;
     private String titleOrContent;
 
