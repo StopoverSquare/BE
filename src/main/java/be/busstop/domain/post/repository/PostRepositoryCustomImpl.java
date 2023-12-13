@@ -29,7 +29,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                 .from(QPost.post)
                 .where(
                         categoryEq(condition.getCategory()),
-                        dateEq(condition.getStartDate()),
+                        dateEq(condition.getEndDate()),
                         titleOrContentEq(condition.getTitleOrContent()),
                         locationEq(condition.getLocation()))
                 .orderBy(QPost.post.createdAt.desc())
@@ -41,15 +41,15 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                 .from(QPost.post)
                 .where(
                         categoryEq(condition.getCategory()),
-                        dateEq(condition.getStartDate()),
+                        dateEq(condition.getEndDate()),
                         titleOrContentEq(condition.getTitleOrContent()),
                         locationEq(condition.getLocation()))
                 .fetchCount();
 
         return new PageImpl<>(result, pageable, totalCount);
     }
-    private BooleanExpression dateEq(String StartDate) {
-        return hasText(StartDate) ? QPost.post.title.contains(StartDate) : null;
+    private BooleanExpression dateEq(String endDateCond) {
+        return hasText(endDateCond) ? QPost.post.endDate.contains(endDateCond) : null;
     }
     private BooleanExpression locationEq(String locationCond) {
         return hasText(locationCond) ? QPost.post.location.contains(locationCond) : null;
