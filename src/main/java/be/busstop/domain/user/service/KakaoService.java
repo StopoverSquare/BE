@@ -162,14 +162,12 @@ public class KakaoService {
         Long id = jsonNode.get("id").asLong();
         String nickname = jsonNode.get("properties").get("nickname").asText();
         String profileImageUrl = jsonNode.get("properties").get("profile_image").asText();
-        String gender = jsonNode.get("kakao_account").get("gender").asText();
-        String age = String.valueOf(calculateAge(jsonNode.get("kakao_account").get("birthday").asText()));
 
         // 로깅을 통해 Kakao 사용자 정보를 기록
         log.info("카카오 사용자 정보: " + id + ", " + nickname );
 
         // KakaoDto 객체를 생성하여 사용자 정보를 담고 반환
-        return new KakaoDto(id, nickname, age, gender, profileImageUrl);
+        return new KakaoDto(id, nickname, profileImageUrl);
     }
     private int calculateAge(String birthday) {
         // 실제로는 생일 정보를 이용하여 연령대를 계산하는 로직을 추가해야 합니다.

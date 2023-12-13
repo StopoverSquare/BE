@@ -1,7 +1,8 @@
 package be.busstop.domain.user.service;
 
 import be.busstop.domain.post.entity.Post;
-import be.busstop.domain.user.dto.mypage.MypageRequestDto;
+import be.busstop.domain.user.dto.mypage.DetailRequestDto;
+import be.busstop.domain.user.dto.mypage.NicknameRequestDto;
 import be.busstop.domain.user.dto.mypage.MypageResponseDto;
 import be.busstop.domain.user.entity.User;
 import be.busstop.domain.user.repository.UserRepository;
@@ -12,7 +13,6 @@ import be.busstop.global.utils.S3;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -54,9 +54,9 @@ public class MyPageService {
     }
 
     @Transactional
-    public ApiResponse<?> updateUserProfile(Long userId, MypageRequestDto mypageRequestDto,
-                                            User user, HttpServletResponse response) {
-        log.info("'{}'님이 프로필 정보와 이미지를 변경했습니다.", user.getNickname());
+    public ApiResponse<?> updateNickname(Long userId, NicknameRequestDto nicknameRequestDto,
+                                         User user, HttpServletResponse response) {
+        log.info("'{}'님이 닉네임을 변경했습니다.", user.getNickname());
 
         User existingUser = findUser(userId);
 
@@ -64,15 +64,26 @@ public class MyPageService {
             throw new IllegalArgumentException("동일한 사용자가 아닙니다.");
         }
 
-        if (mypageRequestDto.getNickname() != null) {
-            existingUser.updateNickname(mypageRequestDto.getNickname());
+        if (nicknameRequestDto.getNickname() != null) {
+            existingUser.updateNickname(nicknameRequestDto.getNickname());
         }
 
-        existingUser.update(mypageRequestDto);
+        return ResponseUtils.okWithMessage(SuccessCodeEnum.USER_USERDATA_UPDATA_SUCCESS);
+    }
 
-        kakaoService.addToken(existingUser, response);
+    @Transactional
+    public ApiResponse<?> updateUserDetails(Long userId, DetailRequestDto detailRequestDto,
+                                            User user, HttpServletResponse response) {
+        log.info("'{}'님이 프로필 정보를 변경했습니다.", user.getNickname());
 
-        // 프로필 정보와 이미지 변경에 대한 성공 응답을 반환합니다.
+        User existingUser = findUser(userId);
+
+        if (!existingUser.getId().equals(user.getId())) {
+            throw new IllegalArgumentException("동일한 사용자가 아닙니다.");
+        }
+
+        existingUser.update(detailRequestDto);
+
         return ResponseUtils.okWithMessage(SuccessCodeEnum.USER_USERDATA_UPDATA_SUCCESS);
     }
 
