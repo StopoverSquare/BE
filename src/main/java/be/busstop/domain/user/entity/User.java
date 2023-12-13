@@ -1,7 +1,8 @@
 package be.busstop.domain.user.entity;
 
 import be.busstop.domain.user.dto.KakaoDto;
-import be.busstop.domain.user.dto.mypage.MypageRequestDto;
+import be.busstop.domain.user.dto.mypage.DetailRequestDto;
+import be.busstop.domain.user.dto.mypage.NicknameRequestDto;
 import be.busstop.global.utils.Timestamped;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -59,15 +60,14 @@ public class User extends Timestamped {
     @Builder
     public User(KakaoDto kakaoDto, String password, String profileImageUrl) {
         this.nickname = kakaoDto.getNickname();
-        this.age = kakaoDto.getAge();
-        this.gender = kakaoDto.getGender();
         this.password = password;
         this.profileImageUrl = profileImageUrl;
         this.role = UserRoleEnum.USER;
     }
 
-    public void update(MypageRequestDto mypageRequestDto) {
-        this.nickname = mypageRequestDto.getNickname();
+    public void update(DetailRequestDto detailRequestDto) {
+      this.age = detailRequestDto.getAge();
+      this.gender = detailRequestDto.getGender();
     }
     public void setSessionId(String sessionId){
         this.sessionId = sessionId;

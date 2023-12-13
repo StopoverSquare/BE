@@ -1,6 +1,7 @@
 package be.busstop.domain.user.controller;
 
-import be.busstop.domain.user.dto.mypage.MypageRequestDto;
+import be.busstop.domain.user.dto.mypage.DetailRequestDto;
+import be.busstop.domain.user.dto.mypage.NicknameRequestDto;
 import be.busstop.domain.user.service.MyPageService;
 import be.busstop.global.responseDto.ApiResponse;
 import be.busstop.global.security.UserDetailsImpl;
@@ -26,13 +27,21 @@ public class MyPageController {
             return success(myPageService.getCurrentUserDetails(userid));
         }
 
-    @PutMapping("mypage/{userId}")
-    public ApiResponse<?> updateUserProfile(@PathVariable Long userId,
-                                            @Valid @RequestBody MypageRequestDto mypageRequestDto,
+    @PutMapping("mypage/{userId}/nickname")
+    public ApiResponse<?> updateUserNickname(@PathVariable Long userId,
+                                            @Valid @RequestBody NicknameRequestDto nicknameRequestDto,
                                             @AuthenticationPrincipal UserDetailsImpl userDetailsImpl,
                                             HttpServletResponse response) {
-        return myPageService.updateUserProfile(userId, mypageRequestDto, userDetailsImpl.getUser(), response);
+        return myPageService.updateNickname(userId, nicknameRequestDto, userDetailsImpl.getUser(), response);
         }
+
+    @PutMapping("mypage/{userId}/detail")
+    public ApiResponse<?> updateUserDetail(@PathVariable Long userId,
+                                            @Valid @RequestBody DetailRequestDto detailRequestDto,
+                                            @AuthenticationPrincipal UserDetailsImpl userDetailsImpl,
+                                            HttpServletResponse response) {
+        return myPageService.updateUserDetails(userId, detailRequestDto, userDetailsImpl.getUser(), response);
+    }
 
     @PutMapping("mypageImage/{userId}")
     public ApiResponse<?> updateUserProfileImage(@PathVariable Long userId,
