@@ -1,5 +1,6 @@
 package be.busstop.global.security.jwt;
 
+import be.busstop.domain.post.entity.Category;
 import be.busstop.domain.user.dto.LoginRequestDto;
 import be.busstop.domain.user.entity.UserRoleEnum;
 import be.busstop.domain.user.repository.UserRepository;
@@ -132,11 +133,12 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String username = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
         Long userId = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getId();
         UserRoleEnum role = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getRole();
-        String profileImageUrl = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getProfileImageUrl() ;
+        String profileImageUrl = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getProfileImageUrl();
+        String interest = String.valueOf(((UserDetailsImpl) authResult.getPrincipal()).getUser().getInterest());
 
         // 카카오 로그인의 경우 username에 카카오 이메일 정보가 담겨있을 것이므로 해당 값을 그대로 사용
 
-        String token = jwtUtil.createToken(String.valueOf(userId),username, role, profileImageUrl);
+        String token = jwtUtil.createToken(String.valueOf(userId),username, role, profileImageUrl, Category.valueOf(interest));
         String refreshToken = jwtUtil.createRefreshToken(String.valueOf(userId),username, role, profileImageUrl);
         jwtUtil.addJwtHeaders(token,refreshToken, response);
 

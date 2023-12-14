@@ -1,5 +1,6 @@
 package be.busstop.global.security.jwt;
 
+import be.busstop.domain.post.entity.Category;
 import be.busstop.domain.user.entity.UserRoleEnum;
 import be.busstop.domain.user.repository.UserRepository;
 import be.busstop.global.redis.RedisService;
@@ -123,13 +124,14 @@ public class JwtUtil {
         return null;
     }
 
-    public String createToken(String userId, String username, UserRoleEnum role, String profileImageUrl) {
+    public String createToken(String userId, String username, UserRoleEnum role, String profileImageUrl, Category interest) {
         Date date = new Date();
         return BEARER_PREFIX +
                 Jwts.builder()
                         .setSubject(username)
                         .claim("userId", userId)
                         .claim(AUTHORIZATION_KEY, role)
+                        .claim("intest", interest)
                         .claim("profileImageUrl", profileImageUrl)
                         .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_EXPIRE_TIME)) // 만료시간
                         .setIssuedAt(date)

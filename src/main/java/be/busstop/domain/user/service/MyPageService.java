@@ -1,5 +1,6 @@
 package be.busstop.domain.user.service;
 
+import be.busstop.domain.post.entity.Category;
 import be.busstop.domain.post.entity.Post;
 import be.busstop.domain.user.dto.mypage.DetailRequestDto;
 import be.busstop.domain.user.dto.mypage.NicknameRequestDto;
@@ -65,7 +66,7 @@ public class MyPageService {
         }
 
         if (nicknameRequestDto.getNickname() != null) {
-            existingUser.updateNickname(nicknameRequestDto.getNickname());
+            existingUser.updateNickname(nicknameRequestDto.getNickname(), Category.valueOf(nicknameRequestDto.getInterest()));
         }
 
         return ResponseUtils.okWithMessage(SuccessCodeEnum.USER_USERDATA_UPDATA_SUCCESS);
