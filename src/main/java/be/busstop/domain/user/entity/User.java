@@ -1,8 +1,8 @@
 package be.busstop.domain.user.entity;
 
+import be.busstop.domain.post.entity.Category;
 import be.busstop.domain.user.dto.KakaoDto;
 import be.busstop.domain.user.dto.mypage.DetailRequestDto;
-import be.busstop.domain.user.dto.mypage.NicknameRequestDto;
 import be.busstop.global.utils.Timestamped;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -37,10 +37,13 @@ public class User extends Timestamped {
     @Column()
     private String profileImageUrl;
 
-
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     private UserRoleEnum role;
+
+    @Column(nullable = false)
+    @Enumerated(value = EnumType.STRING)
+    private Category interest;
 
     @Column
     private String roomId;
@@ -48,13 +51,14 @@ public class User extends Timestamped {
     private String sessionId;
 
     @Builder
-    public User(String nickname, String age, String gender, String password, String profileImageUrl, UserRoleEnum role) {
+    public User(String nickname, String age, String gender, String password, String profileImageUrl, UserRoleEnum role, Category interest) {
         this.nickname = nickname;
         this.age = age;
         this.gender = gender;
         this.password = password;
         this.profileImageUrl = profileImageUrl;
         this.role = role;
+        this.interest = interest;
     }
 
     @Builder
@@ -64,20 +68,21 @@ public class User extends Timestamped {
         this.profileImageUrl = profileImageUrl;
         this.role = UserRoleEnum.USER;
     }
-
+    public void updateNickname(String nickname, Category interest) {
+        this.nickname = nickname;
+        this.interest = interest;
+    }
     public void update(DetailRequestDto detailRequestDto) {
-      this.age = detailRequestDto.getAge();
-      this.gender = detailRequestDto.getGender();
+        this.nickname = detailRequestDto.getNickname();
+        this.interest = Category.valueOf(detailRequestDto.getInterest());
+        this.age = detailRequestDto.getAge();
+        this.gender = detailRequestDto.getGender();
     }
     public void setSessionId(String sessionId){
         this.sessionId = sessionId;
     }
     public void setRoomId(String roomId){
         this.roomId = roomId;
-    }
-
-    public void updateNickname(String nickname) {
-        this.nickname = nickname;
     }
 
     public void setProfileImageUrl(String profileImageUrl) {

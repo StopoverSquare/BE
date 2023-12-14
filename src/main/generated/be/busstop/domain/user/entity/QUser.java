@@ -30,6 +30,8 @@ public class QUser extends EntityPathBase<User> {
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
+    public final EnumPath<be.busstop.domain.post.entity.Category> interest = createEnum("interest", be.busstop.domain.post.entity.Category.class);
+
     //inherited
     public final DateTimePath<java.time.LocalDateTime> modifiedAt = _super.modifiedAt;
 

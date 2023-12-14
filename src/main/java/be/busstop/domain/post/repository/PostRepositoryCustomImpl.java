@@ -28,7 +28,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                 .select(new QPostResponseDto(QPost.post))
                 .from(QPost.post)
                 .where(
-                        categoryEq(condition.getCategory()),
+                        categoryEq(condition.getInterest()),
                         dateEq(condition.getEndDate()),
                         titleOrContentEq(condition.getTitleOrContent()),
                         locationEq(condition.getLocation()))
@@ -40,7 +40,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                 .select(QPost.post.count())
                 .from(QPost.post)
                 .where(
-                        categoryEq(condition.getCategory()),
+                        categoryEq(condition.getInterest()),
                         dateEq(condition.getEndDate()),
                         titleOrContentEq(condition.getTitleOrContent()),
                         locationEq(condition.getLocation()))

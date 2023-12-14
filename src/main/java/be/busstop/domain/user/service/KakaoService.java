@@ -193,7 +193,7 @@ public class KakaoService {
     }
 
     public ApiResponse<?> addToken(User user, HttpServletResponse response) {
-        String token = jwtUtil.createToken(String.valueOf(user.getId()),user.getNickname(),user.getRole(), user.getProfileImageUrl());
+        String token = jwtUtil.createToken(String.valueOf(user.getId()),user.getNickname(),user.getRole(), user.getProfileImageUrl(),user.getInterest());
         String refreshToken = jwtUtil.createRefreshToken(String.valueOf(user.getId()), user.getNickname(), user.getRole(), user.getProfileImageUrl());
 
         jwtUtil.addJwtHeaders(token, refreshToken, response);
