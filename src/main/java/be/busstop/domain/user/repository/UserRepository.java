@@ -17,4 +17,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<Post> findPostsByUserId(@Param("userId") Long userId);
 
     User findBySessionId(String sessionId);
+
+    boolean existsByNickname(String nickname);
 }

@@ -1,14 +1,17 @@
 package be.busstop.domain.user.controller;
 
+import be.busstop.domain.user.dto.mypage.CheckDuplicateNicknameDto;
 import be.busstop.domain.user.dto.mypage.DetailRequestDto;
 import be.busstop.domain.user.dto.mypage.NicknameRequestDto;
 import be.busstop.domain.user.service.MyPageService;
 import be.busstop.global.responseDto.ApiResponse;
 import be.busstop.global.security.UserDetailsImpl;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,7 +28,7 @@ public class MyPageController {
     @GetMapping("/mypage/{userid}")
     public ApiResponse<?> userDetailView(@PathVariable Long userid) {
             return success(myPageService.getCurrentUserDetails(userid));
-        }
+    }
 
     @PutMapping("mypage/{userId}/nickname")
     public ApiResponse<?> updateUserNickname(@PathVariable Long userId,
@@ -33,7 +36,7 @@ public class MyPageController {
                                             @AuthenticationPrincipal UserDetailsImpl userDetailsImpl,
                                             HttpServletResponse response) {
         return myPageService.updateNickname(userId, nicknameRequestDto, userDetailsImpl.getUser(), response);
-        }
+    }
 
     @PutMapping("mypage/{userId}/detail")
     public ApiResponse<?> updateUserDetail(@PathVariable Long userId,
@@ -50,4 +53,10 @@ public class MyPageController {
                                                  HttpServletResponse response) {
         return myPageService.updateUserProfileImage(userId, image, userDetailsImpl.getUser(), response);
         }
+    @PostMapping("mypage/nickname/check")
+    public ApiResponse<?> checkDuplicatedNickname(@RequestBody CheckDuplicateNicknameDto checkDuplicateNicknameDto){
+        return myPageService.checkDuplicatedNickname(checkDuplicateNicknameDto);
     }
+    }
+
+
