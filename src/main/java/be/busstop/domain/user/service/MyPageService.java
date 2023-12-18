@@ -2,9 +2,10 @@ package be.busstop.domain.user.service;
 
 import be.busstop.domain.post.entity.Category;
 import be.busstop.domain.post.entity.Post;
+import be.busstop.domain.user.dto.mypage.CheckDuplicateNicknameDto;
 import be.busstop.domain.user.dto.mypage.DetailRequestDto;
-import be.busstop.domain.user.dto.mypage.NicknameRequestDto;
 import be.busstop.domain.user.dto.mypage.MypageResponseDto;
+import be.busstop.domain.user.dto.mypage.NicknameRequestDto;
 import be.busstop.domain.user.entity.User;
 import be.busstop.domain.user.repository.UserRepository;
 import be.busstop.global.responseDto.ApiResponse;
@@ -52,6 +53,13 @@ public class MyPageService {
             // 사용자를 찾지 못한 경우 에러 응답을 리턴합니다.
             throw new IllegalArgumentException();
         }
+    }
+
+    public ApiResponse<?> checkDuplicatedNickname(CheckDuplicateNicknameDto checkDuplicateNicknameDto) {
+        String nickname = checkDuplicateNicknameDto.getNickname();
+        if(userRepository.existsByNickname(nickname)) throw new IllegalArgumentException("중복된 아이디입니다.");
+        return ResponseUtils.okWithMessage(SuccessCodeEnum.NICKNAME_UNIQUE_SUCCESS);
+
     }
 
     @Transactional
@@ -112,4 +120,5 @@ public class MyPageService {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
     }
+
 }
