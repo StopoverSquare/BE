@@ -44,6 +44,8 @@ public class QChatRoomEntity extends EntityPathBase<ChatRoomEntity> {
 
     public final StringPath roomId = createString("roomId");
 
+    public final NumberPath<Long> subLimit = createNumber("subLimit", Long.class);
+
     public final StringPath title = createString("title");
 
     public final StringPath titleImageUrl = createString("titleImageUrl");

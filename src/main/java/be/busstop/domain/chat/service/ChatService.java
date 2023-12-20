@@ -7,6 +7,7 @@ import be.busstop.domain.chat.entity.ChatMessageEntity;
 import be.busstop.domain.chat.entity.ChatRoomEntity;
 import be.busstop.domain.chat.entity.ChatRoomParticipant;
 import be.busstop.domain.chat.repository.ChatMessageRepository;
+import be.busstop.domain.chat.repository.ChatRoomParticipantRepository;
 import be.busstop.domain.chat.repository.ChatRoomRepository;
 import be.busstop.domain.chat.repository.RedisChatRepository;
 import be.busstop.domain.notification.service.NotificationService;
@@ -44,6 +45,7 @@ public class ChatService {
     private final RedisChatRepository redisChatRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMessageRepository chatMessageRepository;
+    private final ChatRoomParticipantRepository chatRoomParticipantRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
     private final RedisTemplate redisTemplate;
@@ -158,6 +160,7 @@ public class ChatService {
         chatRoomEntity.setTitleImageUrl(postRequestDto.getImageUrlList().get(0));
         chatRoomEntity.setMasterId(user.getId());
         chatRoomEntity.setMasterNickname(user.getNickname());
+        chatRoomEntity.setSubLimit(postRequestDto.getSubLimit());
 
         // ChatRoomParticipant 생성 및 설정
         ChatRoomParticipant participant = new ChatRoomParticipant();
@@ -186,6 +189,10 @@ public class ChatService {
         ChatRoom chatRoom = redisChatRepository.findRoomById(roomId);
         if (chatRoom == null) {
             throw new IllegalArgumentException("유효하지 않은 채팅방 정보입니다.");
+        }
+
+        if(!checkParticipation(chatRoom)){
+            throw new IllegalArgumentException("참가자 인원이 초과하였습니다.");
         }
 
         ChatRoomEntity chatRoomEntity = chatRoomRepository.findById(roomId).orElse(null);
@@ -279,11 +286,12 @@ public class ChatService {
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
     @Transactional
-    public ChatRoom createRoom(String nickname) {
+    public ChatRoom createRoom(String nickname, Long subLimit) {
         ChatRoom chatRoom = redisChatRepository.createChatRoom(nickname);
 
         ChatRoomEntity chatRoomEntity = new ChatRoomEntity();
         chatRoomEntity.setRoomId(chatRoom.getRoomId());
+        chatRoomEntity.setSubLimit(subLimit);
 
         ChatRoomParticipant participant = new ChatRoomParticipant();
         participant.setChatRoom(chatRoomEntity);
@@ -295,5 +303,15 @@ public class ChatService {
         chatRoomRepository.save(chatRoomEntity);
 
         return chatRoom;
+    }
+
+    // 채팅 인원 제한
+    public boolean checkParticipation(ChatRoom chatRoom){
+        String roomId = chatRoom.getRoomId();
+        ChatRoomEntity chatRoomEntity = chatRoomRepository.findByRoomId(roomId);
+        Long curSub = chatRoomParticipantRepository.countAllByChatRoom(chatRoomEntity);
+        Long subLimit = chatRoomRepository.findByRoomId(roomId).getSubLimit();
+
+        return curSub < subLimit;
     }
 }

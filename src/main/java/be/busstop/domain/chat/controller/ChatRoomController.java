@@ -32,8 +32,8 @@ public class ChatRoomController {
     // 채팅방 생성
     @PostMapping("/room")
     @ResponseBody
-    public ChatRoom createRoom(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return chatService.createRoom(userDetails.getUser().getNickname());
+    public ChatRoom createRoom(@AuthenticationPrincipal UserDetailsImpl userDetails, Long subLimit) {
+        return chatService.createRoom(userDetails.getUser().getNickname(), subLimit);
     }
     @GetMapping("/room/{roomId}")
     @ResponseBody

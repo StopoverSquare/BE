@@ -20,6 +20,7 @@ public class PostRequestDto {
     private String location;
     private String endDate;
     private List<String> imageUrlList;
+    private Long subLimit;
 
     public void setImageUrlList(List<String> imageUrlList) {
         this.imageUrlList = imageUrlList;
