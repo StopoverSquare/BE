@@ -51,6 +51,8 @@ public class ChatRoomEntity extends Timestamped implements Serializable {
     @Column(name = "last_message_time")
     private LocalDateTime lastMessageTime; // 가장 최근 메시지 시간
 
+    @Column(name = "sub_limit")
+    private Long subLimit;
 
     public void updateLastMessage(String message, String sender, String profileimage, LocalDateTime time) {
         this.lastMessage = message;
