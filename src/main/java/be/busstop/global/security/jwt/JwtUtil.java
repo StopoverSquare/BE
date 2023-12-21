@@ -124,14 +124,16 @@ public class JwtUtil {
         return null;
     }
 
-    public String createToken(String userId, String username, UserRoleEnum role, String profileImageUrl, Category interest) {
+    public String createToken(String userId, String username, String age, String gender, UserRoleEnum role, String profileImageUrl, Category interest) {
         Date date = new Date();
         return BEARER_PREFIX +
                 Jwts.builder()
                         .setSubject(username)
                         .claim("userId", userId)
+                        .claim("age", age)
+                        .claim("gender", gender)
                         .claim(AUTHORIZATION_KEY, role)
-                        .claim("intest", interest)
+                        .claim("interest", interest)
                         .claim("profileImageUrl", profileImageUrl)
                         .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_EXPIRE_TIME)) // 만료시간
                         .setIssuedAt(date)
