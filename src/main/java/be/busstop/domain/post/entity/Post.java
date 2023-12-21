@@ -61,6 +61,9 @@ public class Post extends Timestamped {
     @Column
     private String endDate;
 
+    @Column
+    private String endTime;
+
     @ElementCollection
     @BatchSize(size = 5)
     @Column
@@ -85,6 +88,7 @@ public class Post extends Timestamped {
         this.content = postRequestDto.getContent();
         this.location = postRequestDto.getLocation();
         this.endDate = postRequestDto.getEndDate();
+        this.endTime = postRequestDto.getEndTime();
         this.nickname = this.user.getNickname();
         this.age = this.user.getAge();
         this.gender = this.user.getGender();
