@@ -165,6 +165,7 @@ public class PostService {
                 post.getCreatedAt(),
                 post.getImageUrlList().stream().limit(1).map(String::new).collect(Collectors.toList()),
                 post.getEndDate(),
+                post.getEndTime(),
                 post.getLocation(),
                 post.getUser().getProfileImageUrl()
         );

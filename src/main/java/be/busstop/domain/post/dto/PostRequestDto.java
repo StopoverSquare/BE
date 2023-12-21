@@ -19,6 +19,7 @@ public class PostRequestDto {
     private String content;
     private String location;
     private String endDate;
+    private String endTime;
     private List<String> imageUrlList;
     private Long subLimit;
 

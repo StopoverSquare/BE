@@ -28,6 +28,7 @@ public class PostResponseDto {
     private LocalDateTime createdAt;
     private List<String> imageUrlList;
     private String endDate;
+    private String endTime;
     private String status;
     private Boolean isComplete;
     private int views;
@@ -53,6 +54,7 @@ public class PostResponseDto {
         this.content = post.getContent();
         this.createdAt = post.getCreatedAt();
         this.endDate = post.getEndDate();
+        this.endTime = post.getEndTime();
         this.location = post.getLocation();
         this.profileImageUrl = post.getUser().getProfileImageUrl();
     }
@@ -69,6 +71,7 @@ public class PostResponseDto {
         this.gender = post.getUser().getGender();
         this.content = post.getContent();
         this.endDate = post.getEndDate();
+        this.endTime = post.getEndTime();
         this.createdAt = post.getCreatedAt();
         this.imageUrlList = post.getImageUrlList().stream()
                 .map(String::new)
@@ -86,7 +89,7 @@ public class PostResponseDto {
     public PostResponseDto(Long id, Long userId, Category category, String title,
                                String nickname, String age, String gender,
                                LocalDateTime createdAt, List<String> imageUrlList,
-                               String endDate, String location, String profileImageUrl) {
+                               String endDate,String endTime, String location, String profileImageUrl) {
         this.id = id;
         this.userId = userId;
         this.category = category;
@@ -99,6 +102,7 @@ public class PostResponseDto {
                 .map(String::new)
                 .collect(Collectors.toList());
         this.endDate = endDate;
+        this.endTime = endTime;
         this.location = location;
         this.profileImageUrl = profileImageUrl;
     }
