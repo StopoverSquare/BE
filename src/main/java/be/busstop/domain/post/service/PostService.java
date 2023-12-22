@@ -84,6 +84,8 @@ public class PostService {
         return ok(new PostResponseDto(post, isComplete, chatParticipants));
     }
 
+
+
     private List<String> getChatParticipants(String chatRoomId) {
         ChatRoomEntity chatRoom = chatRoomRepository.findById(chatRoomId).orElse(null);
         if (chatRoom != null) {
