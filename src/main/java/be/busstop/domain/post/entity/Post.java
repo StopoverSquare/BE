@@ -78,6 +78,9 @@ public class Post extends Timestamped {
     @Column
     private String chatroomId;
 
+    @OneToMany
+    private List<Applicant> applicant;
+
     public Post(PostRequestDto postRequestDto, List<String> imageUrlList, User user, String chatroomId ) {
         this.user = user;
         this.category = postRequestDto.getCategory();
