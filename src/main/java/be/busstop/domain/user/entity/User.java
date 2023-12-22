@@ -46,6 +46,9 @@ public class User extends Timestamped {
     private Category interest;
 
     @Column
+    private long reportCount;
+
+    @Column
     private String roomId;
     @Column
     private String sessionId;
@@ -91,6 +94,10 @@ public class User extends Timestamped {
 
     public User kakaoIdUpdate(KakaoDto kakaoDto){
         return this;
+    }
+
+    public void increaseReportCount(){
+        this.reportCount ++;
     }
 
 }

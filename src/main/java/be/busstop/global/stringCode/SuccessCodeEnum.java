@@ -18,8 +18,8 @@ public enum SuccessCodeEnum {
     USER_USERDATA_UPDATA_SUCCESS("유저 정보 업데이트 성공"),
     TOKEN_REFRESH_SUCCESS("토큰 갱신 성공"),
     USER_IMAGE_SUCCESS("프로필 이미지 변경 성공"),
-    POST_REPORT_SUCCESS("게시글 신고 성공"),
-    CHAT_REPORT_SUCCESS("채팅 신고 성공");
+    USER_REPORT_SUCCESS("유저 신고 성공");
+
 
     private final String message;
 

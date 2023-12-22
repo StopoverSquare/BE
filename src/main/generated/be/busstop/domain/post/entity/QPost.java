@@ -37,6 +37,8 @@ public class QPost extends EntityPathBase<Post> {
 
     public final StringPath endDate = createString("endDate");
 
+    public final StringPath endTime = createString("endTime");
+
     public final StringPath gender = createString("gender");
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
