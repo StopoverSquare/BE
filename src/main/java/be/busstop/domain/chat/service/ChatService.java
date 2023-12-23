@@ -181,8 +181,8 @@ public class ChatService {
 
 
     @Transactional
-    public ChatRoom addParticipantToChatRoomByPost(String roomId, User user) {
-        User newUser = userRepository.findById(user.getId())
+    public ChatRoom addParticipantToChatRoomByPost(String roomId, Long userId) {
+        User newUser = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자 정보입니다."));
         String newUserNickname = newUser.getNickname();
         Post post = postRepository.findByChatroomId(roomId);
@@ -224,7 +224,6 @@ public class ChatService {
 
                 User Master = userRepository.findById(chatRoomEntity.getMasterId()).
                         orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자 정보입니다."));
-                notificationService.send(Master, AlarmType.eventCreateComment," '" +chatRoomEntity.getTitle() + "'방에 입장하셨습니다.", user.getNickname(), user.getProfileImageUrl(), "/feed/" + post.getId());
             }
         }
 
