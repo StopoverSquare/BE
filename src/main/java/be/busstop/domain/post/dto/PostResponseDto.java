@@ -1,5 +1,6 @@
 package be.busstop.domain.post.dto;
 
+import be.busstop.domain.post.entity.Applicant;
 import be.busstop.domain.post.entity.Category;
 import be.busstop.domain.post.entity.Post;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -36,6 +37,7 @@ public class PostResponseDto {
     private String profileImageUrl;
     private String chatroomId;
     private List<String> chatParticipants;
+    private List<Applicant> applicants;
 
     // 전체 조회
     @QueryProjection
@@ -84,7 +86,9 @@ public class PostResponseDto {
         }
         this.chatroomId = post.getChatroomId();
         this.chatParticipants = chatParticipants;
+        this.applicants = post.getApplicant();
     }
+
     // 랜덤 조회
     public PostResponseDto(Long id, Long userId, Category category, String title,
                                String nickname, String age, String gender,

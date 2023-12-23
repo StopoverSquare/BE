@@ -46,10 +46,10 @@ public class ChatRoomController {
         return chatService.getUserRooms(userDetails.getUser());
     }
 
-    @PostMapping("/room/post/{roomId}")
+    @PostMapping("/room/post/{roomId}/{userId}")
     @ResponseBody
-    public ChatRoom addParticipantToChatRoomByPost(@PathVariable String roomId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return chatService.addParticipantToChatRoomByPost(roomId,userDetails.getUser());
+    public ChatRoom addParticipantToChatRoomByPost(@PathVariable String roomId, @PathVariable Long userId) {
+        return chatService.addParticipantToChatRoomByPost(roomId, userId);
     }
 
     @DeleteMapping("/room/post/{roomId}")
