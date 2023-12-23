@@ -9,6 +9,7 @@ import be.busstop.domain.post.dto.PostResponseDto;
 import be.busstop.domain.post.dto.PostSearchCondition;
 import be.busstop.domain.post.entity.Post;
 import be.busstop.domain.post.repository.PostRepository;
+import be.busstop.domain.poststatus.entity.Status;
 import be.busstop.domain.poststatus.repository.PostStatusRepository;
 import be.busstop.domain.user.entity.User;
 import be.busstop.domain.user.entity.UserRoleEnum;
@@ -22,13 +23,19 @@ import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -197,4 +204,17 @@ public class PostService {
         return post;
     }
 
+    @Transactional
+    @Async
+    @Scheduled(cron = "0 0 0 * * *")
+    public void checkEndTime() throws ParseException {
+        List<Post> posts = postRepository.findAll();
+        for(Post post : posts){
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy'y'MM'm'dd'd'");
+            Date postEndDate = dateFormat.parse(post.getEndDate());
+            if(postEndDate.before(DateTime.now().toDate())){
+                postRepository.updateByStatus(post.getId(), Status.COMPLETED);
+            }
+        }
+    }
 }
