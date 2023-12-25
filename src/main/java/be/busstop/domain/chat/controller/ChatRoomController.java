@@ -55,10 +55,10 @@ public class ChatRoomController {
         return chatService.getUserRooms(userDetails.getUser());
     }
     @Operation(summary = "게시글 채팅방에 유저 추가(구독) -> 이거 쓰세요")
-    @PostMapping("/room/post/{roomId}")
+    @PostMapping("/room/post/{roomId}/{userId}")
     @ResponseBody
-    public ChatRoom addParticipantToChatRoomByPost(@PathVariable String roomId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return chatService.addParticipantToChatRoomByPost(roomId,userDetails.getUser());
+    public ChatRoom addParticipantToChatRoomByPost(@PathVariable String roomId, @PathVariable Long userId) {
+        return chatService.addParticipantToChatRoomByPost(roomId, userId);
     }
     @Operation(summary = "채팅방 나가기(구독 삭제) -> 이거 쓰세요")
     @DeleteMapping("/room/post/{roomId}")
