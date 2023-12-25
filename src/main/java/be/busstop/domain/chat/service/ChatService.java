@@ -47,12 +47,10 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomParticipantRepository chatRoomParticipantRepository;
     private final UserRepository userRepository;
-    private final NotificationService notificationService;
     private final RedisTemplate redisTemplate;
     private final ChannelTopic channelTopic;
     private final JwtUtil jwtUtil;
     private final S3 s3Service;
-    private final PostRepository postRepository;
 
 
     public String getRoomId(String destination) {
@@ -185,7 +183,6 @@ public class ChatService {
         User newUser = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자 정보입니다."));
         String newUserNickname = newUser.getNickname();
-        Post post = postRepository.findByChatroomId(roomId);
         ChatRoom chatRoom = redisChatRepository.findRoomById(roomId);
         if (chatRoom == null) {
             throw new IllegalArgumentException("유효하지 않은 채팅방 정보입니다.");
@@ -221,9 +218,6 @@ public class ChatService {
                 chatMessage.setMessage(newUserNickname + "님이 입장했습니다.");
                 chatMessage.setProfileImageUrl(null);
                 sendChatMessage(chatMessage);
-
-                User Master = userRepository.findById(chatRoomEntity.getMasterId()).
-                        orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자 정보입니다."));
             }
         }
 

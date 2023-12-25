@@ -36,6 +36,11 @@ public class Post extends Timestamped {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
+    @JsonIgnore
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PostApplicant> applicants = new ArrayList<>();
+
     @Enumerated(EnumType.STRING)
     private Category category;
 
@@ -81,8 +86,6 @@ public class Post extends Timestamped {
     @Column
     private String chatroomId;
 
-    @OneToMany
-    private List<Applicant> applicant;
 
     public Post(PostRequestDto postRequestDto, List<String> imageUrlList, User user, String chatroomId ) {
         this.user = user;
@@ -104,6 +107,11 @@ public class Post extends Timestamped {
     public void increaseViews() {
         this.views++;
     }
+
+    public void removeApplicant(String applicantNickname) {
+        applicants.removeIf(applicant -> applicant.getNickname().equals(applicantNickname));
+    }
+
 
     public void markInProgress() {
         this.status = Status.IN_PROGRESS;

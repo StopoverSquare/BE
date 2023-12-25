@@ -26,6 +26,8 @@ public class QPost extends EntityPathBase<Post> {
 
     public final StringPath age = createString("age");
 
+    public final ListPath<PostApplicant, QPostApplicant> applicants = this.<PostApplicant, QPostApplicant>createList("applicants", PostApplicant.class, QPostApplicant.class, PathInits.DIRECT2);
+
     public final EnumPath<Category> category = createEnum("category", Category.class);
 
     public final StringPath chatroomId = createString("chatroomId");

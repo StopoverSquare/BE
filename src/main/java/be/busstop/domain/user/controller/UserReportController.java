@@ -30,7 +30,7 @@ public class UserReportController {
         return userReportService.reportUser(userDetailsImpl.getUser(),userId, userReportDto, images);
     }
 
-    @Operation(summary = "관리자 권한 부여")
+    @Operation(summary = "관리자권한 부여 = 관리자계정만 권한부여 가능")
     @PostMapping("/admin/{userId}")
     public ApiResponse<?> makeUserAdmin(@AuthenticationPrincipal UserDetailsImpl userDetails
                                         ,@PathVariable Long userId) {
@@ -51,23 +51,23 @@ public class UserReportController {
         return adminPageService.makeUser(userDetails.getUser(), userId);
     }
 
-    @Operation(summary = "일반 유저 조회")
+    @Operation(summary = "일반유저 조회")
     @GetMapping("/userList")
     public ApiResponse<?> userList(@AuthenticationPrincipal UserDetailsImpl userDetails) {
             return adminPageService.userList(userDetails.getUser());
     }
-    @Operation(summary = "블랙 유저 조회")
+    @Operation(summary = "BLACK 유저 조회")
     @GetMapping("/blackUser")
     public ApiResponse<?> blackUserList(@AuthenticationPrincipal UserDetailsImpl userDetails) {
             return adminPageService.userBlackList(userDetails.getUser());
     }
-    @Operation(summary = "신고 된 유저들 조회")
+    @Operation(summary = "신고된 유저들 조회")
     @GetMapping("/reportList")
     public ApiResponse<?> searchAllUserReports(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ApiResponse.success( adminPageService.searchAllUserReports(userDetails.getUser()));
     }
 
-    @Operation(summary = "신고 된 유저 상세 조회")
+    @Operation(summary = "신고된 유저 상세조회")
     @GetMapping("/reportList/{userId}")
     public ApiResponse<?> getUserReportDetail (@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                 @PathVariable Long userId){
