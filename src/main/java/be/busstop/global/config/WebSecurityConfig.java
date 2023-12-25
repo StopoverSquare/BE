@@ -93,7 +93,6 @@ public class WebSecurityConfig {
                                 .requestMatchers(GET,"/test").permitAll()
                                 .requestMatchers("/chat/image").permitAll()
                                 .requestMatchers("/chat/{roomId}").permitAll()
-                                .requestMatchers("/downloadImages").permitAll()
                                 .anyRequest().authenticated()) // 그 외 모든 요청 인증처리
                 .addFilter(corsFilter())
                 .addFilterBefore(jwtAuthorizationFilter(), JwtAuthenticationFilter.class)

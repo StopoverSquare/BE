@@ -70,7 +70,7 @@ public class PostController {
     }
 
     @Operation(summary = "게시글 참여자 거부")
-    @PostMapping("/{postId}/applicants/{userId}")
+    @DeleteMapping ("/{postId}/applicants/{userId}")
     public ApiResponse<?> denyParticipant(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                              @PathVariable Long postId,
                                              @PathVariable Long userId) {
