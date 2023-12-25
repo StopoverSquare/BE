@@ -5,6 +5,7 @@ import be.busstop.domain.post.dto.PostSearchCondition;
 import be.busstop.domain.post.service.PostService;
 import be.busstop.global.responseDto.ApiResponse;
 import be.busstop.global.security.UserDetailsImpl;
+import be.busstop.global.utils.ResponseUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,16 +33,19 @@ public class PostController {
                                          Pageable pageable) {
         return postService.getRandomPosts(pageable);
     }
+
     @Operation(summary = "게시글 최신순으로 전체 조회")
     @GetMapping
     public ApiResponse<?> searchPost(PostSearchCondition condition, Pageable pageable) {
         return postService.searchPost(condition, pageable);
     }
+
     @Operation(summary = "게시글 상세조회")
     @GetMapping("/{postId}")
     public ApiResponse<?> readOnePost(@PathVariable Long postId, HttpServletRequest req) {
         return postService.getSinglePost(postId, req);
     }
+
     @Operation(summary = "게시글 작성")
     @PostMapping
     public ApiResponse<?> createPost(@Valid @RequestPart(value = "data") PostRequestDto postRequestDto,
@@ -49,10 +53,34 @@ public class PostController {
                                      @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
         return postService.createPost(postRequestDto, images, userDetailsImpl.getUser());
     }
+
     @Operation(summary = "게시글 삭제")
-    @DeleteMapping ("/{postId}")
+    @DeleteMapping("/{postId}")
     public ApiResponse<?> deletePost(@PathVariable Long postId,
                                      @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
         return postService.deletePost(postId, userDetailsImpl.getUser());
+    }
+
+    @Operation(summary = "게시글 참여자 승인")
+    @PostMapping("/{postId}/applicants/{userId}")
+    public ApiResponse<?> approveParticipant(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                             @PathVariable Long postId,
+                                             @PathVariable Long userId) {
+        return postService.approveParticipant(userDetails.getUser(), postId, userId);
+    }
+
+    @Operation(summary = "게시글 참여자 거부")
+    @PostMapping("/{postId}/applicants/{userId}")
+    public ApiResponse<?> denyParticipant(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                             @PathVariable Long postId,
+                                             @PathVariable Long userId) {
+        return postService.denyParticipant(userDetails.getUser(), postId, userId);
+    }
+
+    @Operation(summary = "게시글 참여신청")
+    @PostMapping("/{postId}/applicants")
+    public ApiResponse<?> addApplicant(@AuthenticationPrincipal UserDetailsImpl userDetailsImpl,
+                                       @PathVariable Long postId) {
+        return postService.addApplicant(userDetailsImpl.getUser(), postId);
     }
 }

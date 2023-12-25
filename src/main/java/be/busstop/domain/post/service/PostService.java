@@ -1,13 +1,15 @@
 package be.busstop.domain.post.service;
 
 import be.busstop.domain.chat.entity.ChatRoomEntity;
-import be.busstop.domain.chat.entity.ChatRoomParticipant;
 import be.busstop.domain.chat.repository.ChatRoomRepository;
 import be.busstop.domain.chat.service.ChatService;
+import be.busstop.domain.notification.service.NotificationService;
+import be.busstop.domain.notification.util.AlarmType;
 import be.busstop.domain.post.dto.PostRequestDto;
 import be.busstop.domain.post.dto.PostResponseDto;
 import be.busstop.domain.post.dto.PostSearchCondition;
 import be.busstop.domain.post.entity.Post;
+import be.busstop.domain.post.entity.PostApplicant;
 import be.busstop.domain.post.repository.PostRepository;
 import be.busstop.domain.poststatus.entity.Status;
 import be.busstop.domain.poststatus.repository.PostStatusRepository;
@@ -34,6 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -55,6 +58,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostStatusRepository postStatusRepository;
     private final ChatRoomRepository chatRoomRepository;
+    private final NotificationService notificationService;
     private final UserRepository userRepository;
     private final ChatService chatService;
     private final JwtUtil jwtUtil;
@@ -87,8 +91,9 @@ public class PostService {
 
         // 채팅방 참여자의 닉네임 가져오기
         List<String> chatParticipants = getChatParticipants(post.getChatroomId());
+        List<PostApplicant> applicants = getApplicants(post.getId());
 
-        return ok(new PostResponseDto(post, isComplete, chatParticipants));
+        return ok(new PostResponseDto(post, isComplete, chatParticipants, applicants));
     }
 
 
@@ -107,6 +112,83 @@ public class PostService {
                     .collect(Collectors.toList());
         }
         return List.of();
+    }
+
+    @Transactional
+    public ApiResponse<?> approveOrDenyParticipant(User actionUser, Long postId, Long userId, boolean isApprove) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 게시글 정보입니다."));
+
+        User targetUser = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자 정보입니다."));
+
+        // 확인: 요청한 사용자가 게시글 작성자인지 확인
+        if (!post.getUser().getNickname().equals(actionUser.getNickname())) {
+            throw new IllegalArgumentException("게시글 작성자만이 신청자를 처리할 수 있습니다.");
+        }
+
+        List<PostApplicant> applicants = post.getApplicants();
+        if (applicants == null || applicants.isEmpty()) {
+            throw new IllegalArgumentException("해당 게시글에 대한 신청자가 없습니다.");
+        }
+
+        // 신청자 목록에서 해당 유저를 찾아서 제거
+        post.removeApplicant(targetUser.getNickname());
+        postRepository.save(post);
+
+        // 처리 결과에 따라 알림 메시지 설정
+        String actionType = isApprove ? "허가" : "거부";
+        String notificationMessage = String.format(" '%s'방에 참가신청이 %s되었습니다.", post.getTitle(), actionType);
+
+        if (isApprove) {
+            chatService.addParticipantToChatRoomByPost(post.getChatroomId(), userId);
+        }
+
+        notificationService.send(targetUser, AlarmType.eventCreateComment, notificationMessage,
+                targetUser.getNickname(), targetUser.getProfileImageUrl(), "/feed/" + post.getId());
+
+        String successMessage = isApprove ? "채팅 신청허가 성공" : "채팅 신청거부 성공";
+        return ApiResponse.success(successMessage);
+    }
+
+    // 참여승인 메서드
+    public ApiResponse<?> approveParticipant(User approver, Long postId, Long userId) {
+        return approveOrDenyParticipant(approver, postId, userId, true);
+    }
+
+    // 참여거부 메서드
+    public ApiResponse<?> denyParticipant(User denier, Long postId, Long userId) {
+        return approveOrDenyParticipant(denier, postId, userId, false);
+    }
+
+
+    @Transactional
+    public ApiResponse<?> addApplicant(User applicantUser, Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 게시글 정보입니다."));
+
+        PostApplicant applicant = new PostApplicant(
+                applicantUser.getId(),
+                applicantUser.getNickname(),
+                applicantUser.getAge(),
+                applicantUser.getGender(),
+                applicantUser.getProfileImageUrl(),
+                applicantUser.getReportCount(),
+                post
+        );
+        post.getApplicants().add(applicant);
+        User master = userRepository.findByNickname(post.getNickname())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+        notificationService.send(master, AlarmType.eventCreateComment," '" + post.getTitle() + "'방에 참가신청을 하였습니다.",applicant.getNickname(), applicant.getProfileImageUrl(), "/feed/" + post.getId());
+        return ApiResponse.success("채팅 참가신청 성공");
+    }
+
+
+    public List<PostApplicant> getApplicants(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 게시글 정보입니다."));
+
+        return new ArrayList<>(post.getApplicants());
     }
 
 

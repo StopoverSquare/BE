@@ -1,15 +1,14 @@
 package be.busstop.domain.post.dto;
 
-import be.busstop.domain.post.entity.Applicant;
 import be.busstop.domain.post.entity.Category;
 import be.busstop.domain.post.entity.Post;
+import be.busstop.domain.post.entity.PostApplicant;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.querydsl.core.annotations.QueryProjection;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,7 +36,7 @@ public class PostResponseDto {
     private String profileImageUrl;
     private String chatroomId;
     private List<String> chatParticipants;
-    private List<Applicant> applicants;
+    private List<PostApplicant> applicants;
 
     // 전체 조회
     @QueryProjection
@@ -62,7 +61,7 @@ public class PostResponseDto {
     }
 
     // 상세 조회
-    public PostResponseDto(Post post, Boolean isComplete,  List<String> chatParticipants){
+    public PostResponseDto(Post post, Boolean isComplete, List<String> chatParticipants, List<PostApplicant> applicants){
         this.id = post.getId();
         this.userId = post.getUser().getId();
         this.category = post.getCategory();
@@ -86,7 +85,7 @@ public class PostResponseDto {
         }
         this.chatroomId = post.getChatroomId();
         this.chatParticipants = chatParticipants;
-        this.applicants = post.getApplicant();
+        this.applicants = applicants;
     }
 
     // 랜덤 조회
