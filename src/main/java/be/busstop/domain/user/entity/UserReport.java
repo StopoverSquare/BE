@@ -15,15 +15,13 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor
+@Table(name = "user_report")
 public class UserReport extends Timestamped {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reporter_id")
@@ -35,19 +33,15 @@ public class UserReport extends Timestamped {
     @Enumerated(EnumType.STRING)
     private UserReportEnum report;
 
-    @Column
-    private String type = "User";
-
     @ElementCollection
     @Fetch(FetchMode.JOIN)
     @BatchSize(size = 5)
     @Column
     private List<String> imageUrlList = new ArrayList<>();
 
-    public UserReport(User user,Long reportedUserId, List<String> imageUrlList, UserReportEnum report) {
-        this.reporter = user;
+    public UserReport(User reporter,Long reportedUserId, List<String> imageUrlList, UserReportEnum report) {
+        this.reporter = reporter;
         this.reportedUserId = reportedUserId;
-        this.user = user;
         this.report = report;
         this.imageUrlList = imageUrlList;
     }

@@ -41,7 +41,7 @@ public class QUser extends EntityPathBase<User> {
 
     public final StringPath profileImageUrl = createString("profileImageUrl");
 
-    public final NumberPath<Long> reportCount = createNumber("reportCount", Long.class);
+    public final NumberPath<Integer> reportCount = createNumber("reportCount", Integer.class);
 
     public final EnumPath<UserRoleEnum> role = createEnum("role", UserRoleEnum.class);
 

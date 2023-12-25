@@ -45,8 +45,7 @@ public class User extends Timestamped {
     @Enumerated(value = EnumType.STRING)
     private Category interest;
 
-    @Column
-    private long reportCount;
+    private Integer reportCount;
 
     @Column
     private String roomId;
@@ -96,8 +95,16 @@ public class User extends Timestamped {
         return this;
     }
 
-    public void increaseReportCount(){
-        this.reportCount ++;
+    public void setRole(UserRoleEnum userRoleEnum) {
+        this.role = userRoleEnum;
+    }
+
+
+    public void increaseReportCount() {
+        if (this.reportCount == null) {
+            this.reportCount = 0;
+        }
+        this.reportCount++;
     }
 
 }

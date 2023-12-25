@@ -40,10 +40,6 @@ public class QUserReport extends EntityPathBase<UserReport> {
 
     public final QUser reporter;
 
-    public final StringPath type = createString("type");
-
-    public final QUser user;
-
     public QUserReport(String variable) {
         this(UserReport.class, forVariable(variable), INITS);
     }
@@ -63,7 +59,6 @@ public class QUserReport extends EntityPathBase<UserReport> {
     public QUserReport(Class<? extends UserReport> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
         this.reporter = inits.isInitialized("reporter") ? new QUser(forProperty("reporter")) : null;
-        this.user = inits.isInitialized("user") ? new QUser(forProperty("user")) : null;
     }
 
 }

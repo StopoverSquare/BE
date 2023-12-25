@@ -4,6 +4,8 @@ import be.busstop.domain.user.entity.User;
 import be.busstop.domain.user.service.KakaoService;
 import be.busstop.global.responseDto.ApiResponse;
 import be.busstop.global.stringCode.SuccessCodeEnum;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+
+@Tag(name = "카카오 API", description = "로그인")
 @Slf4j
 @RestController
 @RequestMapping("/api")
@@ -22,6 +26,7 @@ public class KakaoController {
 
     private final KakaoService kakaoService;
 
+    @Operation(summary = "인가코드 전달 받은 후 카카오로부터 사용자 정보 발급 -> 최종 토큰 반환")
     @Transactional
     @PostMapping("/kakao")
     public ApiResponse<?> kakaoCallback(@RequestParam String code, HttpServletResponse response) throws IOException {
