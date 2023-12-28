@@ -47,7 +47,7 @@ public class User extends Timestamped {
 
     private Integer reportCount;
 
-    private Long mannerTemplate;
+    private Double mannerTemplate;
 
     @Column
     private String roomId;
@@ -101,6 +101,9 @@ public class User extends Timestamped {
         this.role = userRoleEnum;
     }
 
+    public void setMannerTemplate(Double mannerTemplate) {
+        this.mannerTemplate = mannerTemplate;
+    }
 
     public void increaseReportCount() {
         if (this.reportCount == null) {
