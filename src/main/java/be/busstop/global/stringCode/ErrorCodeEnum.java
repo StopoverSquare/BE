@@ -8,6 +8,8 @@ public enum ErrorCodeEnum {
     TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),
     LOGIN_FAIL(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다."),
     DUPLICATE_NICKNAME(HttpStatus.BAD_REQUEST, "해당 닉네임이 이미 존재합니다."),
+    ALREADY_APPLICANT(HttpStatus.BAD_REQUEST, "이미 신청한 게시글입니다."),
+    CANNOT_APPLY_TO_OWN_POST(HttpStatus.BAD_REQUEST, "작성자는 신청할 수 없습니다."),
     DUPLICATE_USERNAME_EXIST(HttpStatus.BAD_REQUEST, "중복된 사용자가 존재합니다."),
     POST_NOT_EXIST(HttpStatus.NOT_FOUND, "존재하지 않는 게시글입니다."),
     POST_DELETE_FAILED(HttpStatus.BAD_REQUEST,"신고내역이 존재하는 게시글 입니다. 관리자만 삭제가 가능합니다."),
@@ -38,4 +40,5 @@ public enum ErrorCodeEnum {
     public String getMessage() {
         return message;
     }
+
 }

@@ -32,7 +32,7 @@ public class MypageResponseDto {
                         post.getId(), post.getUser().getId(),
                         post.getCategory(), post.getStatus().name(),
                         post.getTitle(), post.getUser().getNickname(),
-                        post.getUser().getAge(), post.getUser().getGender(),post.getLocation(),
+                        post.getUser().getAge(), post.getUser().getGender(),post.getLocation(),post.getLocationDetail(),
                         Collections.singletonList(Collections.singletonList(post.getImageUrlList().get(0)).toString()),post.getUser().getProfileImageUrl(),
                         post.getViews(), post.getCreatedAt()))
                 .collect(Collectors.toList());
