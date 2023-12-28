@@ -121,4 +121,9 @@ public class MyPageService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
     }
 
+    public ApiResponse<?> evaluateUser(Long userId, Long score) {
+        User user = findUser(userId);
+        user.setMannerTemplate(user.getMannerTemplate() + (score/10.0));
+        return ResponseUtils.ok("매너온도 측정 완료");
+    }
 }
