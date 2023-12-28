@@ -28,6 +28,8 @@ public class ChatRoomParticipant {
     private String age;
     @Column
     private String gender;
+    @Column
+    private String profileImageUrl;
     @Column(name = "entry_time")
     private LocalDateTime entryTime;
 }

@@ -166,6 +166,7 @@ public class ChatService {
         participant.setNickname(user.getNickname());
         participant.setAge(user.getAge());
         participant.setGender(user.getGender());
+        participant.setProfileImageUrl(user.getProfileImageUrl());
         participant.setEntryTime(LocalDateTime.now());
         participant.setChatRoom(chatRoomEntity);
 
@@ -205,6 +206,7 @@ public class ChatService {
                 participant.setNickname(newUser.getNickname());
                 participant.setAge(newUser.getAge());
                 participant.setGender(newUser.getGender());
+                participant.setProfileImageUrl(newUser.getProfileImageUrl());
                 participant.setEntryTime(LocalDateTime.now());
 
                 participants.add(participant);

@@ -64,6 +64,9 @@ public class Post extends Timestamped {
     private String location;
 
     @Column
+    private String locationDetail;
+
+    @Column
     private String endDate;
 
     @Column
@@ -93,6 +96,7 @@ public class Post extends Timestamped {
         this.title = postRequestDto.getTitle();
         this.content = postRequestDto.getContent();
         this.location = postRequestDto.getLocation();
+        this.locationDetail = postRequestDto.getLocationDetail();
         this.endDate = postRequestDto.getEndDate();
         this.endTime = postRequestDto.getEndTime();
         this.nickname = this.user.getNickname();
@@ -112,7 +116,10 @@ public class Post extends Timestamped {
         applicants.removeIf(applicant -> applicant.getNickname().equals(applicantNickname));
     }
 
-
+    public boolean isUserAlreadyApplicant(String applicantNickname) {
+        return applicants.stream()
+                .anyMatch(applicant -> applicant.getNickname().equals(applicantNickname));
+    }
     public void markInProgress() {
         this.status = Status.IN_PROGRESS;
     }

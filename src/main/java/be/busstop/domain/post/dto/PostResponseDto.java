@@ -31,8 +31,10 @@ public class PostResponseDto {
     private String endTime;
     private String status;
     private Boolean isComplete;
+    private Boolean isAlreadyApplicant;
     private int views;
     private String location;
+    private String locationDetail;
     private String profileImageUrl;
     private String chatroomId;
     private List<String> chatParticipants;
@@ -61,7 +63,7 @@ public class PostResponseDto {
     }
 
     // 상세 조회
-    public PostResponseDto(Post post, Boolean isComplete, List<String> chatParticipants, List<PostApplicant> applicants){
+    public PostResponseDto(Post post, Boolean isComplete,Boolean isAlreadyApplicant, List<String> chatParticipants, List<PostApplicant> applicants){
         this.id = post.getId();
         this.userId = post.getUser().getId();
         this.category = post.getCategory();
@@ -78,11 +80,13 @@ public class PostResponseDto {
                 .map(String::new)
                 .collect(Collectors.toList());
         this.location = post.getLocation();
+        this.locationDetail = post.getLocationDetail();
         this.profileImageUrl = post.getUser().getProfileImageUrl();
         this.isComplete = isComplete;
         if (post.getStatus() != null) {
             this.status = post.getStatus().name();
         }
+        this.isAlreadyApplicant = isAlreadyApplicant;
         this.chatroomId = post.getChatroomId();
         this.chatParticipants = chatParticipants;
         this.applicants = applicants;
@@ -112,7 +116,7 @@ public class PostResponseDto {
     // 마이페이지
     public PostResponseDto(Long id, Long userId, Category category,String status, String title,
                            String nickname, String age, String gender,
-                       String location,List<String> imageUrlList, String profileImageUrl,int views, LocalDateTime createdAt) {
+                       String location,String locationDetail, List<String> imageUrlList, String profileImageUrl,int views, LocalDateTime createdAt) {
         this.id = id;
         this.userId = userId;
         this.category = category;
@@ -122,6 +126,7 @@ public class PostResponseDto {
         this.age = age;
         this.gender = gender;
         this.location = location;
+        this.locationDetail = locationDetail;
         this.imageUrlList = imageUrlList.stream().limit(1)
                 .map(String::new)
                 .collect(Collectors.toList());

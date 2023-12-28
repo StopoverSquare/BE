@@ -18,7 +18,9 @@ import be.busstop.domain.user.entity.UserRoleEnum;
 import be.busstop.domain.user.repository.UserRepository;
 import be.busstop.global.exception.InvalidConditionException;
 import be.busstop.global.responseDto.ApiResponse;
+import be.busstop.global.responseDto.ErrorResponse;
 import be.busstop.global.security.jwt.JwtUtil;
+import be.busstop.global.stringCode.ErrorCodeEnum;
 import be.busstop.global.utils.ResponseUtils;
 import be.busstop.global.utils.S3;
 import io.jsonwebtoken.Claims;
@@ -73,18 +75,26 @@ public class PostService {
         String token = jwtUtil.getTokenFromHeader(req);
         String subStringToken;
         boolean isComplete = false;
+        boolean isAlreadyApplicant = false;
+
+        Post post = postRepository.findDetailPostWithParticipants(postId)
+                .orElseThrow(() -> new InvalidConditionException(POST_NOT_EXIST));
+
         if (token != null) {
             subStringToken = jwtUtil.substringHeaderToken(token);
             Claims userInfo = jwtUtil.getUserInfoFromToken(subStringToken);
-            Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("?"));
-            User user = userRepository.findByNickname(userInfo.getSubject()).orElseThrow(() -> new IllegalArgumentException("?"));
+            User user = userRepository.findByNickname(userInfo.getSubject())
+                    .orElseThrow(() -> new IllegalArgumentException("?"));
 
+            // 사용자가 이미 지원자인 경우 isAlreadyApplicant를 true로 설정
+            isAlreadyApplicant = post.getApplicants().stream()
+                    .anyMatch(applicant -> applicant.getNickname().equals(user.getNickname()));
+
+            // 사용자가 이미 참가한 게시글인 경우 isComplete를 true로 설정
             if (postStatusRepository.findByPostAndUser(post, user).isPresent()) {
                 isComplete = true;
             }
         }
-        Post post = postRepository.findDetailPostWithParticipants(postId).orElseThrow(() ->
-                new InvalidConditionException(POST_NOT_EXIST));
 
         log.info("게시물 ID '{}' 조회 성공", postId);
         post.increaseViews();
@@ -93,9 +103,8 @@ public class PostService {
         List<String> chatParticipants = getChatParticipants(post.getChatroomId());
         List<PostApplicant> applicants = getApplicants(post.getId());
 
-        return ok(new PostResponseDto(post, isComplete, chatParticipants, applicants));
+        return ok(new PostResponseDto(post, isComplete, isAlreadyApplicant,chatParticipants, applicants));
     }
-
 
 
     private List<String> getChatParticipants(String chatRoomId) {
@@ -106,7 +115,8 @@ public class PostService {
                         String userInfo = participant.getNickname() +
                                 ", " +
                                 participant.getAge() + ", " +
-                                participant.getGender();
+                                participant.getGender() + ", " +
+                                participant.getProfileImageUrl();
                         return userInfo;
                     })
                     .collect(Collectors.toList());
@@ -167,6 +177,15 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 게시글 정보입니다."));
 
+        // 게시글 작성자가 본인의 게시물에 참가신청을 할 수 없도록 예외처리
+        if (post.getUser().getId().equals(applicantUser.getId())) {
+            return ResponseUtils.customError(CANNOT_APPLY_TO_OWN_POST);
+        }
+
+        if (post.isUserAlreadyApplicant(applicantUser.getNickname())) {
+            return ResponseUtils.customError(ALREADY_APPLICANT);
+        }
+
         PostApplicant applicant = new PostApplicant(
                 applicantUser.getId(),
                 applicantUser.getNickname(),
@@ -176,10 +195,14 @@ public class PostService {
                 applicantUser.getReportCount(),
                 post
         );
+
         post.getApplicants().add(applicant);
         User master = userRepository.findByNickname(post.getNickname())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
-        notificationService.send(master, AlarmType.eventCreateComment," '" + post.getTitle() + "'방에 참가신청을 하였습니다.",applicant.getNickname(), applicant.getProfileImageUrl(), "/feed/" + post.getId());
+        notificationService.send(master, AlarmType.eventCreateComment,
+                " '" + post.getTitle() + "'방에 참가신청을 하였습니다.", applicant.getNickname(),
+                applicant.getProfileImageUrl(), "/feed/" + post.getId());
+
         return ApiResponse.success("채팅 참가신청 성공");
     }
 

@@ -1,5 +1,6 @@
 package be.busstop.global.responseDto;
 
+import be.busstop.global.stringCode.ErrorCodeEnum;
 import be.busstop.global.stringCode.SuccessCodeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -39,4 +40,5 @@ public class ApiResponse<T> {
 
     public void setError(ErrorResponse errorResponse) {
     }
+
 }
