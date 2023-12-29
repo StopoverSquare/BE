@@ -12,15 +12,18 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findByNickname(String username);
+    Optional<User> findByNickname(String nickname);
 
-    Optional<User> findById(Long userId);
+    Optional<User> findByUsername(String username);
 
     @Query("SELECT p FROM Post p WHERE p.user.id = :userId")
     List<Post> findPostsByUserId(@Param("userId") Long userId);
 
     @Query("SELECT u FROM User u WHERE u.role = :role")
     List<User> findAllByBlackUser(@Param("role") UserRoleEnum BLACK);
+
+    @Query("SELECT u FROM User u WHERE u.role = :role")
+    List<User> findAllByUser(@Param("role") UserRoleEnum USER);
 
     boolean existsByNickname(String nickname);
 }

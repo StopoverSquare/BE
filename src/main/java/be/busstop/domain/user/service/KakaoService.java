@@ -65,7 +65,7 @@ public class KakaoService {
         KakaoDto kakaoUserDto = getKakaoUserInfo(accessToken);
 
         // 기존 사용자 검색
-        User user = userRepository.findByNickname(kakaoUserDto.getNickname()).orElse(null);
+        User user = userRepository.findByUsername(kakaoUserDto.getUsername()).orElse(null);
 
         // 기존 사용자가 없는 경우, 새로운 Kakao 사용자 등록
         if (user == null) {
@@ -160,14 +160,14 @@ public class KakaoService {
         // Kakao OAuth 서버로부터 반환된 JSON 데이터를 파싱하여 사용자 정보 추출
         JsonNode jsonNode = new ObjectMapper().readTree(response.getBody());
         Long id = jsonNode.get("id").asLong();
-        String nickname = jsonNode.get("properties").get("nickname").asText();
+        String username = jsonNode.get("properties").get("nickname").asText();
         String profileImageUrl = jsonNode.get("properties").get("profile_image").asText();
 
         // 로깅을 통해 Kakao 사용자 정보를 기록
-        log.info("카카오 사용자 정보: " + id + ", " + nickname );
+        log.info("카카오 사용자 정보: " + id + ", " + username );
 
         // KakaoDto 객체를 생성하여 사용자 정보를 담고 반환
-        return new KakaoDto(id, nickname, profileImageUrl);
+        return new KakaoDto(id, username, profileImageUrl);
     }
     private int calculateAge(String birthday) {
         // 실제로는 생일 정보를 이용하여 연령대를 계산하는 로직을 추가해야 합니다.
@@ -180,7 +180,7 @@ public class KakaoService {
 
     @Transactional
     public User registerKakaoUser(KakaoDto kakaoUserDto) {
-        User user = userRepository.findByNickname(kakaoUserDto.getNickname()).orElse(null);
+        User user = userRepository.findByNickname(kakaoUserDto.getUsername()).orElse(null);
         if (user != null) {
             user.kakaoIdUpdate(kakaoUserDto);
         } else {
@@ -193,14 +193,14 @@ public class KakaoService {
     }
 
     public ApiResponse<?> addToken(User user, HttpServletResponse response) {
-        String token = jwtUtil.createToken(String.valueOf(user.getId()),user.getNickname(),user.getAge(), user.getGender(), user.getRole(), user.getProfileImageUrl(),user.getInterest());
+        String token = jwtUtil.createToken(String.valueOf(user.getId()),user.getUsername(),user.getNickname(),user.getAge(), user.getGender(), user.getRole(), user.getProfileImageUrl(),user.getInterest());
         String refreshToken = jwtUtil.createRefreshToken(String.valueOf(user.getId()), user.getNickname(), user.getRole(), user.getProfileImageUrl());
 
         jwtUtil.addJwtHeaders(token, refreshToken, response);
 
         // refresh 토큰은 redis에 저장
         RefreshToken refresh = RefreshToken.builder()
-                .id(user.getNickname())
+                .id(user.getUsername())
                 .refreshToken(refreshToken)
                 .build();
         log.info("리프레쉬 토큰 저장 성공. 유저 ID: {}", user.getId());

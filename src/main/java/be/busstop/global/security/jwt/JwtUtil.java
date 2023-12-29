@@ -124,11 +124,12 @@ public class JwtUtil {
         return null;
     }
 
-    public String createToken(String userId, String username, String age, String gender, UserRoleEnum role, String profileImageUrl, Category interest) {
+    public String createToken(String userId, String username,String nickname, String age, String gender, UserRoleEnum role, String profileImageUrl, Category interest) {
         Date date = new Date();
         return BEARER_PREFIX +
                 Jwts.builder()
                         .setSubject(username)
+                        .claim("nickname", nickname)
                         .claim("userId", userId)
                         .claim("age", age)
                         .claim("gender", gender)
@@ -210,6 +211,7 @@ public class JwtUtil {
             String newAccessToken = BEARER_PREFIX +
                     Jwts.builder()
                             .setSubject(id) // 사용자 식별
+                            .claim("nickname", claims.get("nickname",String.class))
                             .claim("userId", claims.get("userId", String.class)) // userId 추가
                             .claim(AUTHORIZATION_KEY, role)
                             .claim("profileImageUrl", claims.get("profileImageUrl", String.class))

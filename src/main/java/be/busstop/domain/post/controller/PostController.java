@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -62,6 +63,7 @@ public class PostController {
     }
 
     @Operation(summary = "게시글 참여자 승인")
+    @Transactional
     @PostMapping("/{postId}/applicants/{userId}")
     public ApiResponse<?> approveParticipant(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                              @PathVariable Long postId,
@@ -70,6 +72,7 @@ public class PostController {
     }
 
     @Operation(summary = "게시글 참여자 거부")
+    @Transactional
     @DeleteMapping ("/{postId}/applicants/{userId}")
     public ApiResponse<?> denyParticipant(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                              @PathVariable Long postId,
@@ -78,6 +81,7 @@ public class PostController {
     }
 
     @Operation(summary = "게시글 참여신청")
+    @Transactional
     @PostMapping("/{postId}/applicants")
     public ApiResponse<?> addApplicant(@AuthenticationPrincipal UserDetailsImpl userDetailsImpl,
                                        @PathVariable Long postId) {

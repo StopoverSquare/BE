@@ -131,6 +131,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         // 사용자 정보 가져오기
         String username = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
+        String nickname = ((UserDetailsImpl) authResult.getPrincipal()).getNickname();
         Long userId = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getId();
         String age = (((UserDetailsImpl) authResult.getPrincipal()).getUser().getAge());
         String gender = (((UserDetailsImpl) authResult.getPrincipal()).getUser().getGender());
@@ -140,7 +141,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         // 카카오 로그인의 경우 username에 카카오 이메일 정보가 담겨있을 것이므로 해당 값을 그대로 사용
 
-        String token = jwtUtil.createToken(String.valueOf(userId),username, age, gender, role, profileImageUrl, Category.valueOf(interest));
+        String token = jwtUtil.createToken(String.valueOf(userId),username, nickname, age, gender, role, profileImageUrl, Category.valueOf(interest));
         String refreshToken = jwtUtil.createRefreshToken(String.valueOf(userId),username, role, profileImageUrl);
         jwtUtil.addJwtHeaders(token,refreshToken, response);
 

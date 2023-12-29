@@ -13,26 +13,28 @@ import be.busstop.global.stringCode.ErrorCodeEnum;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class AdminPageService {
 
 
     private final UserRepository userRepository;
     private final UserReportRepository userReportRepository;
-
+    @Transactional(readOnly = true)
     public ApiResponse<?> userList(User user) {
         validateAdminRole(user);
-        List<User> userList = userRepository.findAll();
+        List<User> userList = userRepository.findAllByUser(UserRoleEnum.USER);
         List<UserResponseDto> userResponseDtoList = userList.stream().map(UserResponseDto::new).toList();
 
         return ApiResponse.success(userResponseDtoList);
     }
-
+    @Transactional(readOnly = true)
     public ApiResponse<?> userBlackList(User user) {
         validateAdminRole(user);
         List<User> blackUserList = userRepository.findAllByBlackUser(UserRoleEnum.BLACK);
@@ -40,41 +42,41 @@ public class AdminPageService {
 
         return ApiResponse.success(userResponseDtoList);
     }
-
+    @Transactional
     public ApiResponse<?> makeUserAdmin(User user, Long userId) {
         validateAdminRole(user);
         User admin = findUserById(userId);
-        user.setRole(UserRoleEnum.ADMIN);
+        user.setRoleAdmin();
         userRepository.save(admin);
         return ApiResponse.success(admin.getNickname() + "유저의 권한을 ADMIN으로 변경하였습니다.");
     }
 
-    private User findUserById(Long userId) {
-        return userRepository.findById(userId).orElseThrow(() ->
-                new InvalidConditionException(ErrorCodeEnum.USER_NOT_EXIST));
-    }
-
+    @Transactional
     public ApiResponse<?> makeUserBlack(User user, Long userId) {
         validateAdminRole(user);
         User black = findUserById(userId);
-        user.setRole(UserRoleEnum.BLACK);
+        user.setRoleBlack();
         userRepository.save(black);
         return ApiResponse.success(black.getNickname() + " 유저의 권한을 제한 하였습니다.");
     }
-
+    @Transactional
     public ApiResponse<?> makeUser(User user,Long userId) {
         validateAdminRole(user);
         User user1 = findUserById(userId);
-        user.setRole(UserRoleEnum.USER);
+        user.setRoleUser();
         userRepository.save(user1);
         return ApiResponse.success(user1.getNickname() + " 유저의 권한을 활성화 하였습니다.");
     }
-
-    @Transactional
-    public List<UserReportResponseDto> searchAllUserReports(User user) {
+    @Transactional(readOnly = true)
+    public List<UserReportResponseDto> searchAllUserReports(User user, String nickname) {
         validateAdminRole(user);
 
-        List<UserReport> userReportEntities = userReportRepository.findAll();
+        List<UserReport> userReportEntities;
+        if (StringUtils.hasText(nickname)) {
+            userReportEntities = userReportRepository.findAllByReportedUserId(getUserIdByNickname(nickname));
+        } else {
+            userReportEntities = userReportRepository.findAll();
+        }
 
         return new ArrayList<>(userReportEntities.stream()
                 .collect(Collectors.toMap(
@@ -85,8 +87,7 @@ public class AdminPageService {
                 .values());
     }
 
-
-    @Transactional
+    @Transactional(readOnly = true)
     public UserReportResponseDto getUserReportDetail(User user, Long reportedUserId) {
         validateAdminRole(user);
         User reportedUser = userRepository.findById(reportedUserId)
@@ -102,6 +103,17 @@ public class AdminPageService {
                         report.getCreatedAt()
                 )
         ).orElse(null);
+    }
+
+    private User findUserById(Long userId) {
+        return userRepository.findById(userId).orElseThrow(() ->
+                new InvalidConditionException(ErrorCodeEnum.USER_NOT_EXIST));
+    }
+
+    private Long getUserIdByNickname(String nickname) {
+        User user = userRepository.findByNickname(nickname)
+                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다. 닉네임: " + nickname));
+        return user.getId();
     }
 
     private User getUserById(Long userId) {
@@ -120,6 +132,7 @@ public class AdminPageService {
                 reportedUser.getId(),
                 reportedUser.getReportCount(),
                 reportedUser.getNickname(),
+                reportedUser.getUsername(),
                 reportedUser.getAge(),
                 reportedUser.getGender(),
                 reportedUser.getProfileImageUrl()

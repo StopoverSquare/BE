@@ -53,7 +53,6 @@ import static be.busstop.global.utils.ResponseUtils.okWithMessage;
 
 @Slf4j
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class PostService {
 
