@@ -20,7 +20,7 @@ import java.util.List;
 
 @Tag(name = "구제 관련 API", description = "구제글 작성 및 조회, 삭제")
 @RestController
-@RequestMapping("/api/salv")
+@RequestMapping("/api/salvation")
 @RequiredArgsConstructor
 public class SalvController {
     private final SalvService salvService;
@@ -33,10 +33,10 @@ public class SalvController {
         return salvService.searchSalvation(userDetails.getUser(), condition, pageable);
     }
     @Operation(summary = " 구제글 상세조회 -> 관리자만 가능 ")
-    @GetMapping("/{salvId}")
+    @GetMapping("/{salvationId}")
     public ApiResponse<?> readOneSalvation(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                      @PathVariable Long salvId) {
-        return salvService.getSingleSalvation(userDetails.getUser(),salvId);
+                                      @PathVariable Long salvationId) {
+        return salvService.getSingleSalvation(userDetails.getUser(),salvationId);
     }
     @Operation(summary = " 구제글 작성 -> 권한 필요 없음 ")
     @PostMapping
@@ -45,10 +45,10 @@ public class SalvController {
         return salvService.createSalvation(salvRequestDto, images);
     }
     @Operation(summary = " 구제글 삭제 -> 관리자만 가능 ")
-    @DeleteMapping("/{salvId}")
-    public ApiResponse<?> deletePost(@PathVariable Long salvId,
+    @DeleteMapping("/{salvationId}")
+    public ApiResponse<?> deletePost(@PathVariable Long salvationId,
                                      @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
-        return salvService.deleteSalvation(salvId, userDetailsImpl.getUser());
+        return salvService.deleteSalvation(salvationId, userDetailsImpl.getUser());
     }
 
 }

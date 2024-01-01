@@ -39,15 +39,17 @@ public class SalvService {
         return ok(salvRepository.searchSalvationByPage(condition, pageable));
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public ApiResponse<?> getSingleSalvation(User user, Long salvId) {
         validateAdminRole(user);
         boolean isView = false;
         Salvation salvation = salvRepository.findById(salvId)
                 .orElseThrow(() -> new InvalidConditionException(POST_NOT_EXIST));
-
-        return ok(new SalvResponseDto(salvation,isView));
+        // 강제로 세션 초기화
+        salvation.getImageUrlList().size();
+        return ok(new SalvResponseDto(salvation, isView));
     }
+
     @Transactional
     public ApiResponse<?> createSalvation(SalvRequestDto salvRequestDto, List<MultipartFile> images) {
         List<String> imageUrlList = s3.uploads(images);

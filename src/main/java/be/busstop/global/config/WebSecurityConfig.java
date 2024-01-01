@@ -20,6 +20,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
@@ -85,6 +86,7 @@ public class WebSecurityConfig {
                         authorizeHttpRequests
                                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                                 .requestMatchers(GET,"/**").permitAll()
+                                .requestMatchers(POST,"/api/salvation").permitAll()
                                 .requestMatchers("/auth/**").permitAll()
                                 .requestMatchers("/api/kakao").permitAll()
                                 .requestMatchers(GET,"/auth/mypage/pin").permitAll()
