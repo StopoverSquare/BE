@@ -90,7 +90,7 @@ public class ChatService {
     }
 
 
-    @Transactional(readOnly = true)
+    @Transactional
     public Slice<ChatMessage> getChatMessages(User user, String roomId, Pageable pageable) {
         ChatRoomEntity chatRoomEntity = chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new NotFoundException("채팅방을 찾을 수 없습니다."));

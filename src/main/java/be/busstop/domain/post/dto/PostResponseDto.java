@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @NoArgsConstructor
@@ -32,12 +33,13 @@ public class PostResponseDto {
     private String status;
     private Boolean isComplete;
     private Boolean isAlreadyApplicant;
+    private Boolean isParticipants;
     private int views;
     private String location;
     private String locationDetail;
     private String profileImageUrl;
     private String chatroomId;
-    private List<String> chatParticipants;
+    private List<Map<String, String>> chatParticipants;
     private List<PostApplicant> applicants;
 
     // 전체 조회
@@ -63,7 +65,7 @@ public class PostResponseDto {
     }
 
     // 상세 조회
-    public PostResponseDto(Post post, Boolean isComplete,Boolean isAlreadyApplicant, List<String> chatParticipants, List<PostApplicant> applicants){
+    public PostResponseDto(Post post, Boolean isComplete, Boolean isAlreadyApplicant,Boolean isParticipants, List<Map<String, String>> chatParticipants, List<PostApplicant> applicants){
         this.id = post.getId();
         this.userId = post.getUser().getId();
         this.category = post.getCategory();
@@ -87,6 +89,7 @@ public class PostResponseDto {
             this.status = post.getStatus().name();
         }
         this.isAlreadyApplicant = isAlreadyApplicant;
+        this.isParticipants = isParticipants;
         this.chatroomId = post.getChatroomId();
         this.chatParticipants = chatParticipants;
         this.applicants = applicants;

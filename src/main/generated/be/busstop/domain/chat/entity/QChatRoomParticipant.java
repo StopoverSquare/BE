@@ -34,6 +34,8 @@ public class QChatRoomParticipant extends EntityPathBase<ChatRoomParticipant> {
 
     public final StringPath nickname = createString("nickname");
 
+    public final StringPath profileImageUrl = createString("profileImageUrl");
+
     public final NumberPath<Long> userId = createNumber("userId", Long.class);
 
     public QChatRoomParticipant(String variable) {

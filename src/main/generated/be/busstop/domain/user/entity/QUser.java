@@ -51,6 +51,8 @@ public class QUser extends EntityPathBase<User> {
 
     public final StringPath sessionId = createString("sessionId");
 
+    public final StringPath userCode = createString("userCode");
+
     public QUser(String variable) {
         super(User.class, forVariable(variable));
     }

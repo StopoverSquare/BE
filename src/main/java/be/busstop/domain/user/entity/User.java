@@ -5,15 +5,12 @@ import be.busstop.domain.user.dto.KakaoDto;
 import be.busstop.domain.user.dto.mypage.DetailRequestDto;
 import be.busstop.global.utils.Timestamped;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 
-@Getter
 @Entity
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "users")
 public class User extends Timestamped {
@@ -23,6 +20,9 @@ public class User extends Timestamped {
     private Long id;
 
     @Column(nullable = false, unique = true)
+    private String userCode;
+
+    @Column(unique = true)
     private String nickname;
 
     @Column
@@ -41,13 +41,13 @@ public class User extends Timestamped {
     @Enumerated(value = EnumType.STRING)
     private UserRoleEnum role;
 
-    @Column(nullable = false)
+    @Column
     @Enumerated(value = EnumType.STRING)
     private Category interest;
 
     private Integer reportCount;
 
-    private Long mannerTemplate;
+    private Long mannerTemplate = (long) 36.5;
 
     @Column
     private String roomId;
@@ -55,7 +55,8 @@ public class User extends Timestamped {
     private String sessionId;
 
     @Builder
-    public User(String nickname, String age, String gender, String password, String profileImageUrl, UserRoleEnum role, Category interest) {
+    public User(String nickname, String userCode, String age, String gender, String password, String profileImageUrl, UserRoleEnum role, Category interest) {
+        this.userCode = userCode;
         this.nickname = nickname;
         this.age = age;
         this.gender = gender;
@@ -67,7 +68,7 @@ public class User extends Timestamped {
 
     @Builder
     public User(KakaoDto kakaoDto, String password, String profileImageUrl) {
-        this.nickname = kakaoDto.getNickname();
+        this.userCode = kakaoDto.getUserCode();
         this.password = password;
         this.profileImageUrl = profileImageUrl;
         this.role = UserRoleEnum.USER;
@@ -97,10 +98,15 @@ public class User extends Timestamped {
         return this;
     }
 
-    public void setRole(UserRoleEnum userRoleEnum) {
-        this.role = userRoleEnum;
+    public void setRoleBlack() {
+        this.role = UserRoleEnum.BLACK;
     }
-
+    public void setRoleUser() {
+        this.role = UserRoleEnum.USER;
+    }
+    public void setRoleAdmin() {
+        this.role = UserRoleEnum.ADMIN;
+    }
 
     public void increaseReportCount() {
         if (this.reportCount == null) {
