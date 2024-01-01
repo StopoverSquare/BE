@@ -47,7 +47,7 @@ public class User extends Timestamped {
 
     private Integer reportCount;
 
-    private Long mannerTemplate;
+    private Long mannerTemplate = (long) 36.5;
 
     @Column
     private String roomId;

@@ -57,7 +57,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             UserDetailsImpl userDetails = loadUserByUsername(loginRequestDto.getNickname());
 
             if (userDetails == null) {
-                sendErrorResponse(response, "닉네임이 올바르지 않습니다.", HttpServletResponse.SC_UNAUTHORIZED);
+                sendErrorResponse(response, "유저 고유번호가 올바르지 않습니다.", HttpServletResponse.SC_UNAUTHORIZED);
                 return null;
             }
 

@@ -70,11 +70,11 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     /**
      * 인증 객체를 생성합니다.
      *
-     * @param username 사용자 이름
+     * @param userCode 사용자 고유식별번호
      * @return 인증 객체
      */
-    private Authentication createAuthentication(String username) {
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+    private Authentication createAuthentication(String userCode) {
+        UserDetails userDetails = userDetailsService.loadUserByUserCode(userCode);
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 }
