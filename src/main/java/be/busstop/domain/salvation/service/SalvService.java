@@ -7,8 +7,10 @@ import be.busstop.domain.salvation.entity.Salvation;
 import be.busstop.domain.salvation.repository.SalvRepository;
 import be.busstop.domain.user.entity.User;
 import be.busstop.domain.user.entity.UserRoleEnum;
+import be.busstop.domain.user.repository.UserRepository;
 import be.busstop.global.exception.InvalidConditionException;
 import be.busstop.global.responseDto.ApiResponse;
+import be.busstop.global.stringCode.ErrorCodeEnum;
 import be.busstop.global.utils.ResponseUtils;
 import be.busstop.global.utils.S3;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 import static be.busstop.global.stringCode.ErrorCodeEnum.POST_NOT_EXIST;
-import static be.busstop.global.stringCode.SuccessCodeEnum.POST_CREATE_SUCCESS;
-import static be.busstop.global.stringCode.SuccessCodeEnum.POST_DELETE_SUCCESS;
+import static be.busstop.global.stringCode.ErrorCodeEnum.USER_NOT_EXIST;
+import static be.busstop.global.stringCode.SuccessCodeEnum.*;
 import static be.busstop.global.utils.ResponseUtils.ok;
 import static be.busstop.global.utils.ResponseUtils.okWithMessage;
 
@@ -33,6 +35,7 @@ import static be.busstop.global.utils.ResponseUtils.okWithMessage;
 public class SalvService {
     private final S3 s3;
     private final SalvRepository salvRepository;
+    private final UserRepository userRepository;
 
     public ApiResponse<?> searchSalvation(User user, SalvSearchCondition condition, Pageable pageable) {
         validateAdminRole(user);
@@ -47,6 +50,7 @@ public class SalvService {
                 .orElseThrow(() -> new InvalidConditionException(POST_NOT_EXIST));
         // 강제로 세션 초기화
         salvation.getImageUrlList().size();
+
         return ok(new SalvResponseDto(salvation, isView));
     }
 
@@ -54,18 +58,35 @@ public class SalvService {
     public ApiResponse<?> createSalvation(SalvRequestDto salvRequestDto, List<MultipartFile> images) {
         List<String> imageUrlList = s3.uploads(images);
         salvRequestDto.setImageUrlList(imageUrlList);
-        salvRepository.save(new Salvation(salvRequestDto, imageUrlList));
-        return ResponseUtils.okWithMessage(POST_CREATE_SUCCESS);
+        User user = userRepository.findByNickname(salvRequestDto.getTitle())
+                .orElseThrow(() -> new InvalidConditionException(USER_NOT_EXIST));
+        salvRepository.save(new Salvation(salvRequestDto, user.getId(),imageUrlList));
+        return ResponseUtils.okWithMessage(POST_SALVATION_SUCCESS);
     }
 
     @Transactional
-    public ApiResponse<?> deleteSalvation(Long salvId, User user) {
+    public ApiResponse<?> salvationOk(Long salvId, User user) {
         validateAdminRole(user);
         Salvation salvation = confirmSalv(salvId);
         deleteImage(salvation);
+        makeUser(user,salvation.getUserId());
         salvRepository.delete(salvation);
         log.info("'{}'님이 게시물 ID '{}'를 삭제했습니다.", user.getNickname(), salvId);
-        return okWithMessage(POST_DELETE_SUCCESS);
+        return okWithMessage(SALVATION_SUCCESS);
+    }
+
+    @Transactional
+    public void makeUser(User user, Long userId) {
+        validateAdminRole(user);
+        User user1 = findUserById(userId);
+        user1.setRoleUser();
+        userRepository.save(user1);
+        ApiResponse.success(user1.getNickname() + " 유저의 권한을 활성화 하였습니다.");
+    }
+
+    private User findUserById(Long userId) {
+        return userRepository.findById(userId).orElseThrow(() ->
+                new InvalidConditionException(ErrorCodeEnum.USER_NOT_EXIST));
     }
 
     private void deleteImage(Salvation salvation) {

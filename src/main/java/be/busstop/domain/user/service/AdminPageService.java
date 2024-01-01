@@ -59,14 +59,6 @@ public class AdminPageService {
         userRepository.save(black);
         return ApiResponse.success(black.getNickname() + " 유저의 권한을 제한 하였습니다.");
     }
-    @Transactional
-    public ApiResponse<?> makeUser(User user,Long userId) {
-        validateAdminRole(user);
-        User user1 = findUserById(userId);
-        user1.setRoleUser();
-        userRepository.save(user1);
-        return ApiResponse.success(user1.getNickname() + " 유저의 권한을 활성화 하였습니다.");
-    }
     @Transactional(readOnly = true)
     public List<UserReportResponseDto> searchAllUserReports(User user, String nickname) {
         validateAdminRole(user);

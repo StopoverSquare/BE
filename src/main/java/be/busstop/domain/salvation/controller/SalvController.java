@@ -44,11 +44,11 @@ public class SalvController {
                                           @RequestPart(value = "file") List<MultipartFile> images) {
         return salvService.createSalvation(salvRequestDto, images);
     }
-    @Operation(summary = " 구제글 삭제 -> 관리자만 가능 ")
+    @Operation(summary = " 유저 구제 및 글 삭제 -> 관리자만 가능 ")
     @DeleteMapping("/{salvationId}")
-    public ApiResponse<?> deletePost(@PathVariable Long salvationId,
+    public ApiResponse<?> salvationOk(@PathVariable Long salvationId,
                                      @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
-        return salvService.deleteSalvation(salvationId, userDetailsImpl.getUser());
+        return salvService.salvationOk(salvationId, userDetailsImpl.getUser());
     }
 
 }
