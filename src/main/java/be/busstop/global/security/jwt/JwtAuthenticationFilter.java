@@ -130,7 +130,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         ObjectMapper objectMapper = new ObjectMapper();
 
         // 사용자 정보 가져오기
-        String username = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
+        String userCode = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
         String nickname = ((UserDetailsImpl) authResult.getPrincipal()).getNickname();
         Long userId = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getId();
         String age = (((UserDetailsImpl) authResult.getPrincipal()).getUser().getAge());
@@ -141,14 +141,14 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         // 카카오 로그인의 경우 username에 카카오 이메일 정보가 담겨있을 것이므로 해당 값을 그대로 사용
 
-        String token = jwtUtil.createToken(String.valueOf(userId),username, nickname, age, gender, role, profileImageUrl, Category.valueOf(interest));
-        String refreshToken = jwtUtil.createRefreshToken(String.valueOf(userId),username, role, profileImageUrl);
+        String token = jwtUtil.createToken(String.valueOf(userId),userCode, nickname, age, gender, role, profileImageUrl, Category.valueOf(interest));
+        String refreshToken = jwtUtil.createRefreshToken(String.valueOf(userId),userCode, role, profileImageUrl);
         jwtUtil.addJwtHeaders(token,refreshToken, response);
 
 
         // refresh 토큰은 redis에 저장
         RefreshToken refresh = RefreshToken.builder()
-                .id(username)
+                .id(userCode)
                 .refreshToken(refreshToken)
                 .build();
         redisRepository.save(refresh);

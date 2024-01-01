@@ -20,17 +20,15 @@ public class UserReportResponseDto {
     private List<String> reportImages;
     private Integer userReportCount;
     private String nickname;
-    private String username;
     private String age;
     private String gender;
     private String profileImageUrl;
     private LocalDateTime createdAt;
 
-    public UserReportResponseDto(Long reportedUserId, Integer userReportCount,String profileImageUrl, String nickname,String username, String age, String gender) {
+    public UserReportResponseDto(Long reportedUserId, Integer userReportCount,String profileImageUrl, String nickname,String age, String gender) {
         this.reportedUserId = reportedUserId;
         this.userReportCount = userReportCount;
         this.nickname = nickname;
-        this.username = username;
         this.age = age;
         this.gender = gender;
         this.profileImageUrl = profileImageUrl;

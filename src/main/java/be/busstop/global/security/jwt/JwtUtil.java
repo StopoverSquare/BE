@@ -124,11 +124,11 @@ public class JwtUtil {
         return null;
     }
 
-    public String createToken(String userId, String username,String nickname, String age, String gender, UserRoleEnum role, String profileImageUrl, Category interest) {
+    public String createToken(String userId, String userCode,String nickname, String age, String gender, UserRoleEnum role, String profileImageUrl, Category interest) {
         Date date = new Date();
         return BEARER_PREFIX +
                 Jwts.builder()
-                        .setSubject(username)
+                        .setSubject(userCode)
                         .claim("nickname", nickname)
                         .claim("userId", userId)
                         .claim("age", age)
@@ -142,10 +142,10 @@ public class JwtUtil {
                         .compact();
     }
 
-    public String createRefreshToken(String userId, String username, UserRoleEnum role, String profileImageUrl) {
+    public String createRefreshToken(String userId, String userCode, UserRoleEnum role, String profileImageUrl) {
         Date date = new Date();
         String refreshToken = Jwts.builder()
-                .setSubject(username)
+                .setSubject(userCode)
                 .claim("userId", userId)
                 .claim(AUTHORIZATION_KEY, role)
                 .claim("profileImageUrl", profileImageUrl)

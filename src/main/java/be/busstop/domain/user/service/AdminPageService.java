@@ -132,7 +132,6 @@ public class AdminPageService {
                 reportedUser.getId(),
                 reportedUser.getReportCount(),
                 reportedUser.getNickname(),
-                reportedUser.getUsername(),
                 reportedUser.getAge(),
                 reportedUser.getGender(),
                 reportedUser.getProfileImageUrl()

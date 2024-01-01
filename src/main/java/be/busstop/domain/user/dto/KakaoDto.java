@@ -7,12 +7,12 @@ import lombok.Setter;
 @Setter
 public class KakaoDto {
     private Long id;
-    private String username;
+    private String userCode;
     private String profileImageUrl;
 
-    public KakaoDto(Long id, String username, String profileImageUrl) {
+    public KakaoDto(Long id, String userCode, String profileImageUrl) {
         this.id = id;
-        this.username = username;
+        this.userCode = userCode;
         this.profileImageUrl = profileImageUrl;
     }
 }

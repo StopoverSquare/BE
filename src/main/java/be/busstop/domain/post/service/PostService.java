@@ -1,6 +1,7 @@
 package be.busstop.domain.post.service;
 
 import be.busstop.domain.chat.entity.ChatRoomEntity;
+import be.busstop.domain.chat.entity.ChatRoomParticipant;
 import be.busstop.domain.chat.repository.ChatRoomRepository;
 import be.busstop.domain.chat.service.ChatService;
 import be.busstop.domain.notification.service.NotificationService;
@@ -38,10 +39,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static be.busstop.global.stringCode.ErrorCodeEnum.*;
@@ -75,6 +73,7 @@ public class PostService {
         String subStringToken;
         boolean isComplete = false;
         boolean isAlreadyApplicant = false;
+        boolean isParticipants = false;
 
         Post post = postRepository.findDetailPostWithParticipants(postId)
                 .orElseThrow(() -> new InvalidConditionException(POST_NOT_EXIST));
@@ -86,10 +85,14 @@ public class PostService {
                     .orElseThrow(() -> new IllegalArgumentException("?"));
 
             // 사용자가 이미 지원자인 경우 isAlreadyApplicant를 true로 설정
-            isAlreadyApplicant = post.getApplicants().stream()
-                    .anyMatch(applicant -> applicant.getNickname().equals(user.getNickname()));
-
-            // 사용자가 이미 참가한 게시글인 경우 isComplete를 true로 설정
+            if (post.getApplicants().stream()
+                    .anyMatch(applicant -> applicant.getNickname().equals(user.getNickname()))
+                    || getChatParticipantNicknames(post.getChatroomId()).contains(user.getNickname())) {
+                isAlreadyApplicant = true;
+            }
+            if (getChatParticipantNicknames(post.getChatroomId()).contains(user.getNickname())){
+                isParticipants = true;
+            }
             if (postStatusRepository.findByPostAndUser(post, user).isPresent()) {
                 isComplete = true;
             }
@@ -99,29 +102,39 @@ public class PostService {
         post.increaseViews();
 
         // 채팅방 참여자의 닉네임 가져오기
-        List<String> chatParticipants = getChatParticipants(post.getChatroomId());
+        List<Map<String, String>> chatParticipants = getChatParticipants(post.getChatroomId());
         List<PostApplicant> applicants = getApplicants(post.getId());
 
-        return ok(new PostResponseDto(post, isComplete, isAlreadyApplicant,chatParticipants, applicants));
+        return ok(new PostResponseDto(post, isComplete, isAlreadyApplicant,isParticipants, chatParticipants, applicants));
     }
 
+    private List<String> getChatParticipantNicknames(String chatRoomId) {
+        ChatRoomEntity chatRoom = chatRoomRepository.findById(chatRoomId).orElse(null);
+        if (chatRoom != null) {
+            return chatRoom.getChatRoomParticipants().stream()
+                    .map(ChatRoomParticipant::getNickname)
+                    .collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
 
-    private List<String> getChatParticipants(String chatRoomId) {
+    private List<Map<String, String>> getChatParticipants(String chatRoomId) {
         ChatRoomEntity chatRoom = chatRoomRepository.findById(chatRoomId).orElse(null);
         if (chatRoom != null) {
             return chatRoom.getChatRoomParticipants().stream()
                     .map(participant -> {
-                        String userInfo = participant.getNickname() +
-                                ", " +
-                                participant.getAge() + ", " +
-                                participant.getGender() + ", " +
-                                participant.getProfileImageUrl();
+                        Map<String, String> userInfo = new HashMap<>();
+                        userInfo.put("nickname", participant.getNickname());
+                        userInfo.put("age", String.valueOf(participant.getAge()));
+                        userInfo.put("gender", participant.getGender());
+                        userInfo.put("profileImageUrl", participant.getProfileImageUrl());
                         return userInfo;
                     })
                     .collect(Collectors.toList());
         }
-        return List.of();
+        return Collections.emptyList();
     }
+
 
     @Transactional
     public ApiResponse<?> approveOrDenyParticipant(User actionUser, Long postId, Long userId, boolean isApprove) {

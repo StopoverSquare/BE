@@ -20,7 +20,7 @@ public class User extends Timestamped {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String username;
+    private String userCode;
 
     @Column(unique = true)
     private String nickname;
@@ -55,8 +55,8 @@ public class User extends Timestamped {
     private String sessionId;
 
     @Builder
-    public User(String nickname, String username, String age, String gender, String password, String profileImageUrl, UserRoleEnum role, Category interest) {
-        this.username = username;
+    public User(String nickname, String userCode, String age, String gender, String password, String profileImageUrl, UserRoleEnum role, Category interest) {
+        this.userCode = userCode;
         this.nickname = nickname;
         this.age = age;
         this.gender = gender;
@@ -68,7 +68,7 @@ public class User extends Timestamped {
 
     @Builder
     public User(KakaoDto kakaoDto, String password, String profileImageUrl) {
-        this.username = kakaoDto.getUsername();
+        this.userCode = kakaoDto.getUserCode();
         this.password = password;
         this.profileImageUrl = profileImageUrl;
         this.role = UserRoleEnum.USER;

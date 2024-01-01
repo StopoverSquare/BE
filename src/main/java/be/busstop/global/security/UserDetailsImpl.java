@@ -26,7 +26,7 @@ public class UserDetailsImpl implements UserDetails {
     }
 
     public String getUsername(){
-        return user.getUsername();
+        return user.getUserCode();
     }
     public String getNickname() {return user.getNickname(); }
 

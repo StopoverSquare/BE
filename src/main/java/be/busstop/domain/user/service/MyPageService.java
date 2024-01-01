@@ -92,7 +92,8 @@ public class MyPageService {
         }
 
         existingUser.update(detailRequestDto);
-
+        userRepository.save(existingUser);
+        kakaoService.addToken(existingUser, response);
         return ResponseUtils.okWithMessage(SuccessCodeEnum.USER_USERDATA_UPDATA_SUCCESS);
     }
 
