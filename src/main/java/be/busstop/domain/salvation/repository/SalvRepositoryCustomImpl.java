@@ -12,7 +12,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static org.springframework.util.StringUtils.hasText;
@@ -49,6 +50,10 @@ public class SalvRepositoryCustomImpl implements SalvRepositoryCustom{
         return hasText(titleCond) ? QSalvation.salvation.title.contains(titleCond) : null;
     }
     private BooleanExpression createAtEq(String createAtCond) {
-        return hasText(createAtCond) ? QSalvation.salvation.createdAt.eq(LocalDateTime.parse(createAtCond)) : null;
+        return hasText(createAtCond) ?
+                QSalvation.salvation.createdAt.eq(LocalDate.parse(createAtCond, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                        .atStartOfDay()) :
+                null;
     }
+
 }

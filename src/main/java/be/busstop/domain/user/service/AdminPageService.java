@@ -46,7 +46,7 @@ public class AdminPageService {
     public ApiResponse<?> makeUserAdmin(User user, Long userId) {
         validateAdminRole(user);
         User admin = findUserById(userId);
-        user.setRoleAdmin();
+        admin.setRoleAdmin();
         userRepository.save(admin);
         return ApiResponse.success(admin.getNickname() + "유저의 권한을 ADMIN으로 변경하였습니다.");
     }
@@ -55,7 +55,7 @@ public class AdminPageService {
     public ApiResponse<?> makeUserBlack(User user, Long userId) {
         validateAdminRole(user);
         User black = findUserById(userId);
-        user.setRoleBlack();
+        black.setRoleBlack();
         userRepository.save(black);
         return ApiResponse.success(black.getNickname() + " 유저의 권한을 제한 하였습니다.");
     }
@@ -63,7 +63,7 @@ public class AdminPageService {
     public ApiResponse<?> makeUser(User user,Long userId) {
         validateAdminRole(user);
         User user1 = findUserById(userId);
-        user.setRoleUser();
+        user1.setRoleUser();
         userRepository.save(user1);
         return ApiResponse.success(user1.getNickname() + " 유저의 권한을 활성화 하였습니다.");
     }
