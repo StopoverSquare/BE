@@ -36,6 +36,8 @@ public class QSalvation extends EntityPathBase<Salvation> {
 
     public final StringPath title = createString("title");
 
+    public final NumberPath<Long> userId = createNumber("userId", Long.class);
+
     public QSalvation(String variable) {
         super(Salvation.class, forVariable(variable));
     }

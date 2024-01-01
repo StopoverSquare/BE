@@ -17,6 +17,7 @@ public class SalvResponseDto {
     private Long id;
     private String title;
     private String content;
+    private Long userId;
     private LocalDateTime createdAt;
     private List<String> imageUrlList;
     private Boolean isView;
@@ -34,6 +35,7 @@ public class SalvResponseDto {
         this.content = salvation.getContent();
         this.imageUrlList = salvation.getImageUrlList();
         this.createdAt = salvation.getCreatedAt();
+        this.userId = salvation.getUserId();
         this.isView = isView;
 
     }

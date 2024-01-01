@@ -23,6 +23,9 @@ public class Salvation extends Timestamped {
     @Column(name = "salvation_id")
     private Long id;
 
+    @Column
+    private Long userId;
+
     @Column(nullable = false)
     private String title;
 
@@ -34,9 +37,10 @@ public class Salvation extends Timestamped {
     @Column
     private List<String> imageUrlList = new ArrayList<>();
 
-    public Salvation(SalvRequestDto salvRequestDto, List<String> imageUrlList ) {
+    public Salvation(SalvRequestDto salvRequestDto, Long userId, List<String> imageUrlList ) {
         this.title = salvRequestDto.getTitle();
         this.content = salvRequestDto.getContent();
+        this.userId = userId;
         this.imageUrlList = imageUrlList;
 
     }
