@@ -80,22 +80,25 @@ public class AdminPageService {
     }
 
     @Transactional(readOnly = true)
-    public UserReportResponseDto getUserReportDetail(User user, Long reportedUserId) {
+    public List<UserReportResponseDto> getUserReportDetails(User user, Long reportedUserId) {
         validateAdminRole(user);
         User reportedUser = userRepository.findById(reportedUserId)
                 .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다. ID: " + reportedUserId));
 
-        Optional<UserReport> latestReport = userReportRepository.findTopByReportedUserIdOrderByCreatedAtDesc(reportedUserId);
+        List<UserReport> allReports = userReportRepository.findByReportedUserIdOrderByCreatedAtDesc(reportedUserId);
 
-        return latestReport.map(report ->
-                new UserReportResponseDto(
-                        reportedUser.getId(),
-                        report.getReport(),
-                        report.getImageUrlList(),
-                        report.getCreatedAt()
+        return allReports.stream()
+                .map(report ->
+                        new UserReportResponseDto(
+                                reportedUser.getId(),
+                                report.getReport(),
+                                report.getImageUrlList(),
+                                report.getCreatedAt()
+                        )
                 )
-        ).orElse(null);
+                .collect(Collectors.toList());
     }
+
 
     private User findUserById(Long userId) {
         return userRepository.findById(userId).orElseThrow(() ->

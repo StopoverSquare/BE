@@ -68,6 +68,6 @@ public class UserReportController {
     @GetMapping("/reportList/{userId}")
     public ApiResponse<?> getUserReportDetail (@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                 @PathVariable Long userId){
-        return ApiResponse.success(adminPageService.getUserReportDetail(userDetails.getUser(),userId));
+        return ApiResponse.success(adminPageService.getUserReportDetails(userDetails.getUser(),userId));
     }
 }
