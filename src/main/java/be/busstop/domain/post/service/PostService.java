@@ -63,11 +63,12 @@ public class PostService {
     private final JwtUtil jwtUtil;
     private final S3 s3;
 
+    @Transactional(readOnly = true)
     public ApiResponse<?> searchPost(PostSearchCondition condition, Pageable pageable) {
         return ok(postRepository.searchPostByPage(condition, pageable));
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public ApiResponse<?> getSinglePost(Long postId, HttpServletRequest req) {
         String token = jwtUtil.getTokenFromHeader(req);
         String subStringToken;
@@ -80,8 +81,8 @@ public class PostService {
 
         if (token != null) {
             subStringToken = jwtUtil.substringHeaderToken(token);
-            Claims userInfo = jwtUtil.getUserInfoFromToken(subStringToken);
-            User user = userRepository.findByNickname(userInfo.getSubject())
+            String userNickname = jwtUtil.getNickNameFromToken(subStringToken);
+            User user = userRepository.findByNickname(userNickname)
                     .orElseThrow(() -> new IllegalArgumentException("?"));
 
             // 사용자가 이미 지원자인 경우 isAlreadyApplicant를 true로 설정
@@ -90,12 +91,16 @@ public class PostService {
                     || getChatParticipantNicknames(post.getChatroomId()).contains(user.getNickname())) {
                 isAlreadyApplicant = true;
             }
-            if (getChatParticipantNicknames(post.getChatroomId()).contains(user.getNickname())){
+            if (getChatParticipantNicknames(post.getChatroomId()).contains(user.getNickname())) {
                 isParticipants = true;
             }
             if (postStatusRepository.findByPostAndUser(post, user).isPresent()) {
                 isComplete = true;
             }
+        } else {
+
+            isAlreadyApplicant = false;
+            isParticipants = false;
         }
 
         log.info("게시물 ID '{}' 조회 성공", postId);
@@ -105,8 +110,9 @@ public class PostService {
         List<Map<String, String>> chatParticipants = getChatParticipants(post.getChatroomId());
         List<PostApplicant> applicants = getApplicants(post.getId());
 
-        return ok(new PostResponseDto(post, isComplete, isAlreadyApplicant,isParticipants, chatParticipants, applicants));
+        return ok(new PostResponseDto(post, isComplete, isAlreadyApplicant, isParticipants, chatParticipants, applicants));
     }
+
 
     private List<String> getChatParticipantNicknames(String chatRoomId) {
         ChatRoomEntity chatRoom = chatRoomRepository.findById(chatRoomId).orElse(null);

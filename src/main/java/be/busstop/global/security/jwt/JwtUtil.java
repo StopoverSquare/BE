@@ -85,9 +85,14 @@ public class JwtUtil {
             log.error(e.getMessage());
         }
     }
-    public String getNickNameFromToken(String token) {
+
+    public String getUserCodeFromToken(String token) {
         Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
         return claims.getSubject();
+    }
+    public String getNickNameFromToken(String token) {
+        Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+        return claims.get("nickname", String.class);
     }
     public String getUserIdFromToken(String token) {
         Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
@@ -238,15 +243,15 @@ public class JwtUtil {
 
                 if (redisStoredRefreshToken != null && validateToken(redisStoredRefreshToken)) {
                     String RefreshTokenByUserId = getUserIdFromToken(decryptedRefreshToken);
-                    String RefreshTokenByNickname = getNickNameFromToken(decryptedRefreshToken);
+                    String RefreshTokenByUserCode = getUserCodeFromToken(decryptedRefreshToken);
 
                     String redisRfTokenByUserId = getUserIdFromToken(redisStoredRefreshToken);
-                    String redisRfTokenByNickname = getNickNameFromToken(redisStoredRefreshToken);
+                    String redisRfTokenByUserCode = getUserCodeFromToken(redisStoredRefreshToken);
 
                     log.info("레디스에서 리프레시 토큰 넘어왔나?={}", redisStoredRefreshToken);
 
                     if (RefreshTokenByUserId.equals(redisRfTokenByUserId)
-                            && RefreshTokenByNickname.equals(redisRfTokenByNickname)) {
+                            && RefreshTokenByUserCode.equals(redisRfTokenByUserCode)) {
                         String newAccessToken = createAccessTokenFromRefreshToken(decryptedRefreshToken);
                         addJwtHeader(newAccessToken, response);
                         log.info("리프레시 토큰으로 새로운 액세스 토큰 발급");
