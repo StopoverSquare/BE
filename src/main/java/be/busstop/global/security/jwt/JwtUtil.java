@@ -88,7 +88,7 @@ public class JwtUtil {
 
     public String getUserCodeFromToken(String token) {
         Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
-        return claims.getSubject();
+        return claims.get("sub", String.class);
     }
     public String getNickNameFromToken(String token) {
         Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
