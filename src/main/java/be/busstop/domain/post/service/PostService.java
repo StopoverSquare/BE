@@ -19,12 +19,9 @@ import be.busstop.domain.user.entity.UserRoleEnum;
 import be.busstop.domain.user.repository.UserRepository;
 import be.busstop.global.exception.InvalidConditionException;
 import be.busstop.global.responseDto.ApiResponse;
-import be.busstop.global.responseDto.ErrorResponse;
 import be.busstop.global.security.jwt.JwtUtil;
-import be.busstop.global.stringCode.ErrorCodeEnum;
 import be.busstop.global.utils.ResponseUtils;
 import be.busstop.global.utils.S3;
-import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -76,14 +73,14 @@ public class PostService {
         boolean isAlreadyApplicant = false;
         boolean isParticipants = false;
 
-        Post post = postRepository.findDetailPostWithParticipants(postId)
+        Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new InvalidConditionException(POST_NOT_EXIST));
 
         if (token != null) {
             subStringToken = jwtUtil.substringHeaderToken(token);
             String userNickname = jwtUtil.getNickNameFromToken(subStringToken);
             User user = userRepository.findByNickname(userNickname)
-                    .orElseThrow(() -> new IllegalArgumentException("?"));
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
             // 사용자가 이미 지원자인 경우 isAlreadyApplicant를 true로 설정
             if (post.getApplicants().stream()
@@ -111,34 +108,6 @@ public class PostService {
         List<PostApplicant> applicants = getApplicants(post.getId());
 
         return ok(new PostResponseDto(post, isComplete, isAlreadyApplicant, isParticipants, chatParticipants, applicants));
-    }
-
-
-    private List<String> getChatParticipantNicknames(String chatRoomId) {
-        ChatRoomEntity chatRoom = chatRoomRepository.findById(chatRoomId).orElse(null);
-        if (chatRoom != null) {
-            return chatRoom.getChatRoomParticipants().stream()
-                    .map(ChatRoomParticipant::getNickname)
-                    .collect(Collectors.toList());
-        }
-        return Collections.emptyList();
-    }
-
-    private List<Map<String, String>> getChatParticipants(String chatRoomId) {
-        ChatRoomEntity chatRoom = chatRoomRepository.findById(chatRoomId).orElse(null);
-        if (chatRoom != null) {
-            return chatRoom.getChatRoomParticipants().stream()
-                    .map(participant -> {
-                        Map<String, String> userInfo = new HashMap<>();
-                        userInfo.put("nickname", participant.getNickname());
-                        userInfo.put("age", String.valueOf(participant.getAge()));
-                        userInfo.put("gender", participant.getGender());
-                        userInfo.put("profileImageUrl", participant.getProfileImageUrl());
-                        return userInfo;
-                    })
-                    .collect(Collectors.toList());
-        }
-        return Collections.emptyList();
     }
 
 
@@ -180,15 +149,16 @@ public class PostService {
     }
 
     // 참여승인 메서드
+    @Transactional
     public ApiResponse<?> approveParticipant(User approver, Long postId, Long userId) {
         return approveOrDenyParticipant(approver, postId, userId, true);
     }
 
     // 참여거부 메서드
+    @Transactional
     public ApiResponse<?> denyParticipant(User denier, Long postId, Long userId) {
         return approveOrDenyParticipant(denier, postId, userId, false);
     }
-
 
     @Transactional
     public ApiResponse<?> addApplicant(User applicantUser, Long postId) {
@@ -224,7 +194,7 @@ public class PostService {
         return ApiResponse.success("채팅 참가신청 성공");
     }
 
-
+    @Transactional(readOnly = true)
     public List<PostApplicant> getApplicants(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 게시글 정보입니다."));
@@ -251,13 +221,33 @@ public class PostService {
         log.info("'{}'님이 게시물 ID '{}'를 삭제했습니다.", user.getNickname(), postId);
         return okWithMessage(POST_DELETE_SUCCESS);
     }
-    @Transactional
+    @Transactional(readOnly = true)
     public ApiResponse<?> getRandomPosts(Pageable pageable) {
         List<Post> randomPosts = getRandomPostsFromDatabase(pageable);
 
         return ApiResponse.success(randomPosts.stream()
                 .map(this::mapToPostResponseDto)
                 .collect(Collectors.toList()));
+    }
+
+    @Transactional
+    @Async
+    @Scheduled(cron = "0 0 0 * * *")
+    public void checkEndTime() throws ParseException {
+        List<Post> posts = postRepository.findAll();
+        for(Post post : posts){
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy'y'MM'm'dd'd'");
+            Date postEndDate = dateFormat.parse(post.getEndDate());
+            if(postEndDate.before(DateTime.now().toDate())){
+                postRepository.updateByStatus(post.getId(), Status.COMPLETED);
+            }
+        }
+    }
+
+    private List<Post> getRandomPostsFromDatabase() {
+        List<Post> allPosts = postRepository.findAll();
+        Collections.shuffle(allPosts);
+        return allPosts;
     }
 
     private List<Post> getRandomPostsFromDatabase(Pageable pageable) {
@@ -278,12 +268,33 @@ public class PostService {
         return allPosts.subList(startIdx, endIdx);
     }
 
-    @Transactional(readOnly = true)
-    public List<Post> getRandomPostsFromDatabase() {
-        List<Post> allPosts = postRepository.findAll();
-        Collections.shuffle(allPosts);
-        return allPosts;
+    private List<String> getChatParticipantNicknames(String chatRoomId) {
+        ChatRoomEntity chatRoom = chatRoomRepository.findById(chatRoomId).orElse(null);
+        if (chatRoom != null) {
+            return chatRoom.getChatRoomParticipants().stream()
+                    .map(ChatRoomParticipant::getNickname)
+                    .collect(Collectors.toList());
+        }
+        return Collections.emptyList();
     }
+
+    private List<Map<String, String>> getChatParticipants(String chatRoomId) {
+        ChatRoomEntity chatRoom = chatRoomRepository.findById(chatRoomId).orElse(null);
+        if (chatRoom != null) {
+            return chatRoom.getChatRoomParticipants().stream()
+                    .map(participant -> {
+                        Map<String, String> userInfo = new HashMap<>();
+                        userInfo.put("nickname", participant.getNickname());
+                        userInfo.put("age", String.valueOf(participant.getAge()));
+                        userInfo.put("gender", participant.getGender());
+                        userInfo.put("profileImageUrl", participant.getProfileImageUrl());
+                        return userInfo;
+                    })
+                    .collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
+
 
     public PostResponseDto mapToPostResponseDto(Post post) {
         return new PostResponseDto(
@@ -326,19 +337,5 @@ public class PostService {
 
         log.info("Post access confirmed: postId={}, user={}", postId, user.getId());
         return post;
-    }
-
-    @Transactional
-    @Async
-    @Scheduled(cron = "0 0 0 * * *")
-    public void checkEndTime() throws ParseException {
-        List<Post> posts = postRepository.findAll();
-        for(Post post : posts){
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy'y'MM'm'dd'd'");
-            Date postEndDate = dateFormat.parse(post.getEndDate());
-            if(postEndDate.before(DateTime.now().toDate())){
-                postRepository.updateByStatus(post.getId(), Status.COMPLETED);
-            }
-        }
     }
 }

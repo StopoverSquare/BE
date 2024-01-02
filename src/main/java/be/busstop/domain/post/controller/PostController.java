@@ -63,7 +63,6 @@ public class PostController {
     }
 
     @Operation(summary = "게시글 참여자 승인")
-    @Transactional
     @PostMapping("/{postId}/applicants/{userId}")
     public ApiResponse<?> approveParticipant(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                              @PathVariable Long postId,
@@ -72,7 +71,6 @@ public class PostController {
     }
 
     @Operation(summary = "게시글 참여자 거부")
-    @Transactional
     @DeleteMapping ("/{postId}/applicants/{userId}")
     public ApiResponse<?> denyParticipant(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                              @PathVariable Long postId,
@@ -81,7 +79,6 @@ public class PostController {
     }
 
     @Operation(summary = "게시글 참여신청")
-    @Transactional
     @PostMapping("/{postId}/applicants")
     public ApiResponse<?> addApplicant(@AuthenticationPrincipal UserDetailsImpl userDetailsImpl,
                                        @PathVariable Long postId) {

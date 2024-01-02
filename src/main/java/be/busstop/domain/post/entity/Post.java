@@ -90,7 +90,7 @@ public class Post extends Timestamped {
     private String chatroomId;
 
 
-    public Post(PostRequestDto postRequestDto, List<String> imageUrlList, User user, String chatroomId ) {
+    public Post(PostRequestDto postRequestDto, List<String> imageUrlList, User user, String chatroomId) {
         this.user = user;
         this.category = postRequestDto.getCategory();
         this.title = postRequestDto.getTitle();
@@ -120,13 +120,14 @@ public class Post extends Timestamped {
         return applicants.stream()
                 .anyMatch(applicant -> applicant.getNickname().equals(applicantNickname));
     }
+
     public void markInProgress() {
         this.status = Status.IN_PROGRESS;
     }
+
     public void markClosed() {
         this.status = Status.COMPLETED;
     }
-
 
 
 }

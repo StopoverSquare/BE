@@ -145,7 +145,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         // 카카오 로그인의 경우 username에 카카오 이메일 정보가 담겨있을 것이므로 해당 값을 그대로 사용
 
         String token = jwtUtil.createToken(String.valueOf(userId),userCode, nickname, age, gender, role, profileImageUrl, Category.valueOf(interest));
-        String refreshToken = jwtUtil.createRefreshToken(String.valueOf(userId),userCode, role, profileImageUrl);
+        String refreshToken = jwtUtil.createRefreshToken(String.valueOf(userId),userCode, nickname, age, gender, role,Category.valueOf(interest), profileImageUrl);
         jwtUtil.addJwtHeaders(token,refreshToken, response);
 
 
