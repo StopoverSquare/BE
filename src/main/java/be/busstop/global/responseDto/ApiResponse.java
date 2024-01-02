@@ -37,6 +37,14 @@ public class ApiResponse<T> {
                 .error(null) // 에러는 null로 설정
                 .build();
     }
+    public static ApiResponse<?> customErrorWithNickname(ErrorCodeEnum errorCode, String blockedUserNickname) {
+        return ApiResponse.builder()
+                .success(false)
+                .data(blockedUserNickname) // 차단된 유저의 닉네임을 데이터로 설정
+                .error(new ErrorResponse(errorCode)) // 에러는 ErrorCodeEnum을 사용하여 ErrorResponse를 생성
+                .build();
+    }
+
 
     public void setError(ErrorResponse errorResponse) {
     }

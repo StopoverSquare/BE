@@ -7,6 +7,7 @@ public enum ErrorCodeEnum {
     TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "유효한 토큰이 아닙니다."),
     TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),
     LOGIN_FAIL(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다."),
+    USER_BLACKLISTED(HttpStatus.UNAUTHORIZED, "관리자에 의해 차단된 계정입니다."),
     DUPLICATE_NICKNAME(HttpStatus.BAD_REQUEST, "해당 닉네임이 이미 존재합니다."),
     ALREADY_APPLICANT(HttpStatus.BAD_REQUEST, "이미 신청한 게시글입니다."),
     CANNOT_APPLY_TO_OWN_POST(HttpStatus.BAD_REQUEST, "작성자는 신청할 수 없습니다."),

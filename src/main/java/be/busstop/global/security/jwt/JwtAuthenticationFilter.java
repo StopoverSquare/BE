@@ -62,11 +62,12 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             }
 
             if (userDetails.getUser().getRole() == UserRoleEnum.BLACK) {
-                sendErrorResponse(response, "관리자에 의해 정지된 계정입니다.", HttpServletResponse.SC_UNAUTHORIZED);
-                return null;
+                ApiResponse<?> errorResponse = ApiResponse.customErrorWithNickname(ErrorCodeEnum.USER_BLACKLISTED, userDetails.getNickname());
+                sendJsonResponse(response, errorResponse); // 로그인 실패 시 응답 전송
+                return null; // 인증 실패이므로 null 반환
             }
 
-
+            // 정상적인 경우, Spring Security의 인증 매니저에게 인증 처리를 위임
             return getAuthenticationManager().authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginRequestDto.getNickname(),
@@ -76,9 +77,11 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             );
         } catch (IOException e) {
             log.error("로그인 시도 중 예외 발생: {}", e.getMessage());
-            throw new RuntimeException(e.getMessage());
+            throw new AuthenticationException("로그인 중 오류가 발생했습니다.") {
+            };
         }
     }
+
 
     private void sendErrorResponse(HttpServletResponse response, String errorMessage, int statusCode) throws IOException {
         response.setContentType("application/json");
@@ -184,6 +187,13 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(jsonResponse);
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    }
+
+    private void sendJsonResponse(HttpServletResponse response, ApiResponse<?> apiResponse) throws IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(new ObjectMapper().writeValueAsString(apiResponse));
+        response.getWriter().flush();
     }
 
 }

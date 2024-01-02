@@ -7,6 +7,7 @@ import be.busstop.global.stringCode.ErrorCodeEnum;
 import be.busstop.global.stringCode.SuccessCodeEnum;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.http.HttpStatus;
 
 
 @Getter
