@@ -47,7 +47,7 @@ public class User extends Timestamped {
 
     private Integer reportCount;
 
-    private Long mannerTemplate = (long) 36.5;
+    private Double mannerTemplate;
 
     @Column
     private String roomId;
@@ -64,6 +64,7 @@ public class User extends Timestamped {
         this.profileImageUrl = profileImageUrl;
         this.role = role;
         this.interest = interest;
+        this.mannerTemplate = 36.5;
     }
 
     @Builder

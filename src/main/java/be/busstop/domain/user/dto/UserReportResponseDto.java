@@ -16,7 +16,8 @@ import java.util.List;
 public class UserReportResponseDto {
 
     private Long reportedUserId;
-    private Enum report;
+    private UserReportEnum report;
+    private String reportDetail;
     private List<String> reportImages;
     private Integer userReportCount;
     private String nickname;
@@ -34,9 +35,10 @@ public class UserReportResponseDto {
         this.profileImageUrl = profileImageUrl;
     }
 
-    public UserReportResponseDto(Long reportedUserId, UserReportEnum report, List<String> reportImages, LocalDateTime createdAt) {
+    public UserReportResponseDto(Long reportedUserId, UserReportEnum report,String reportDetail, List<String> reportImages, LocalDateTime createdAt) {
         this.reportedUserId = reportedUserId;
         this.report = report;
+        this.reportDetail = reportDetail;
         this.reportImages = reportImages;
         this.createdAt = createdAt;
     }

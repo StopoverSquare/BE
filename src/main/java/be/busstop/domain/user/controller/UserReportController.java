@@ -46,15 +46,17 @@ public class UserReportController {
                                        ,@PathVariable Long userId) {
         return adminPageService.makeUserBlack(userDetails.getUser(), userId);
     }
-    @Operation(summary = "일반유저 조회")
+    @Operation(summary = "전체유저 조회")
     @GetMapping("/userList")
-    public ApiResponse<?> userList(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-            return adminPageService.userList(userDetails.getUser());
+    public ApiResponse<?> userList(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                   @RequestParam(required = false) String nickname) {
+            return adminPageService.userList(userDetails.getUser(),nickname);
     }
     @Operation(summary = "BLACK 유저 조회")
     @GetMapping("/blackUser")
-    public ApiResponse<?> blackUserList(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-            return adminPageService.userBlackList(userDetails.getUser());
+    public ApiResponse<?> blackUserList(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                        @RequestParam(required = false) String nickname) {
+            return adminPageService.userBlackList(userDetails.getUser(),nickname);
     }
     @Operation(summary = "신고된 유저들 조회")
     @GetMapping("/reportList")
