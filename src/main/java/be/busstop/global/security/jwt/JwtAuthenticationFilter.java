@@ -1,6 +1,7 @@
 package be.busstop.global.security.jwt;
 
 import be.busstop.domain.post.entity.Category;
+import be.busstop.domain.statistics.service.LoginStaticService;
 import be.busstop.domain.user.dto.LoginRequestDto;
 import be.busstop.domain.user.entity.UserRoleEnum;
 import be.busstop.domain.user.repository.UserRepository;
@@ -36,14 +37,16 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     private final RefreshTokenRedisRepository redisRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final LoginStaticService loginStaticService;
 
 
 
-    public JwtAuthenticationFilter(JwtUtil jwtUtil, RefreshTokenRedisRepository redisRepository, UserRepository userRepository,PasswordEncoder passwordEncoder) {
+    public JwtAuthenticationFilter(JwtUtil jwtUtil, RefreshTokenRedisRepository redisRepository, UserRepository userRepository,PasswordEncoder passwordEncoder, LoginStaticService loginStaticService) {
         this.jwtUtil = jwtUtil;
         this.redisRepository = redisRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.loginStaticService = loginStaticService;
         setFilterProcessesUrl("/auth/login");
     }
 
@@ -155,6 +158,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 .refreshToken(refreshToken)
                 .build();
         redisRepository.save(refresh);
+
+        loginStaticService.updateLoginStatic();
 
         ApiResponse<?> apiResponse = okWithMessage(SuccessCodeEnum.USER_LOGIN_SUCCESS);
 
