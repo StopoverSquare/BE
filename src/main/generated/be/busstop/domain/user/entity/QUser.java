@@ -32,7 +32,7 @@ public class QUser extends EntityPathBase<User> {
 
     public final EnumPath<be.busstop.domain.post.entity.Category> interest = createEnum("interest", be.busstop.domain.post.entity.Category.class);
 
-    public final NumberPath<Long> mannerTemplate = createNumber("mannerTemplate", Long.class);
+    public final NumberPath<Double> mannerTemplate = createNumber("mannerTemplate", Double.class);
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> modifiedAt = _super.modifiedAt;
