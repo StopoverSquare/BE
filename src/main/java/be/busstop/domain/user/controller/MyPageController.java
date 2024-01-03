@@ -62,6 +62,12 @@ public class MyPageController {
     public ApiResponse<?> checkDuplicatedNickname(@RequestBody CheckDuplicateNicknameDto checkDuplicateNicknameDto){
         return myPageService.checkDuplicatedNickname(checkDuplicateNicknameDto);
     }
+
+    @Operation(summary = "별점 측정")
+    @PostMapping("mypage/star/{userId}/{score}")
+    public ApiResponse<?> evaluateUser(@PathVariable Long userId, @PathVariable Long score){
+        return myPageService.evaluateUser(userId, score);
+    }
     }
 
 

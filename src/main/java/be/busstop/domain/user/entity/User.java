@@ -109,6 +109,11 @@ public class User extends Timestamped {
         this.role = UserRoleEnum.ADMIN;
     }
 
+
+    public void setMannerTemplate(Double mannerTemplate) {
+        this.mannerTemplate = mannerTemplate;
+    }
+
     public void increaseReportCount() {
         if (this.reportCount == null) {
             this.reportCount = 0;
