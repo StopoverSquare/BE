@@ -90,7 +90,7 @@ public class ChatService {
     }
 
 
-    @Transactional(readOnly = true)
+    @Transactional
     public Slice<ChatMessage> getChatMessages(User user, String roomId, Pageable pageable) {
         ChatRoomEntity chatRoomEntity = chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new NotFoundException("채팅방을 찾을 수 없습니다."));
@@ -166,6 +166,7 @@ public class ChatService {
         participant.setNickname(user.getNickname());
         participant.setAge(user.getAge());
         participant.setGender(user.getGender());
+        participant.setProfileImageUrl(user.getProfileImageUrl());
         participant.setEntryTime(LocalDateTime.now());
         participant.setChatRoom(chatRoomEntity);
 
@@ -205,6 +206,7 @@ public class ChatService {
                 participant.setNickname(newUser.getNickname());
                 participant.setAge(newUser.getAge());
                 participant.setGender(newUser.getGender());
+                participant.setProfileImageUrl(newUser.getProfileImageUrl());
                 participant.setEntryTime(LocalDateTime.now());
 
                 participants.add(participant);

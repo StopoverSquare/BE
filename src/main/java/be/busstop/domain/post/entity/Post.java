@@ -64,6 +64,9 @@ public class Post extends Timestamped {
     private String location;
 
     @Column
+    private String locationDetail;
+
+    @Column
     private String endDate;
 
     @Column
@@ -87,12 +90,13 @@ public class Post extends Timestamped {
     private String chatroomId;
 
 
-    public Post(PostRequestDto postRequestDto, List<String> imageUrlList, User user, String chatroomId ) {
+    public Post(PostRequestDto postRequestDto, List<String> imageUrlList, User user, String chatroomId) {
         this.user = user;
         this.category = postRequestDto.getCategory();
         this.title = postRequestDto.getTitle();
         this.content = postRequestDto.getContent();
         this.location = postRequestDto.getLocation();
+        this.locationDetail = postRequestDto.getLocationDetail();
         this.endDate = postRequestDto.getEndDate();
         this.endTime = postRequestDto.getEndTime();
         this.nickname = this.user.getNickname();
@@ -112,14 +116,18 @@ public class Post extends Timestamped {
         applicants.removeIf(applicant -> applicant.getNickname().equals(applicantNickname));
     }
 
+    public boolean isUserAlreadyApplicant(String applicantNickname) {
+        return applicants.stream()
+                .anyMatch(applicant -> applicant.getNickname().equals(applicantNickname));
+    }
 
     public void markInProgress() {
         this.status = Status.IN_PROGRESS;
     }
+
     public void markClosed() {
         this.status = Status.COMPLETED;
     }
-
 
 
 }

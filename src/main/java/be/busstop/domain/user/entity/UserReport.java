@@ -33,16 +33,20 @@ public class UserReport extends Timestamped {
     @Enumerated(EnumType.STRING)
     private UserReportEnum report;
 
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String reportDetail;
+
     @ElementCollection
     @Fetch(FetchMode.JOIN)
     @BatchSize(size = 5)
     @Column
     private List<String> imageUrlList = new ArrayList<>();
 
-    public UserReport(User reporter,Long reportedUserId, List<String> imageUrlList, UserReportEnum report) {
+    public UserReport(User reporter,Long reportedUserId, List<String> imageUrlList, UserReportEnum report, String reportDetail) {
         this.reporter = reporter;
         this.reportedUserId = reportedUserId;
         this.report = report;
+        this.reportDetail = reportDetail;
         this.imageUrlList = imageUrlList;
     }
 }

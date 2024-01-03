@@ -1,6 +1,7 @@
 package be.busstop.domain.post.service;
 
 import be.busstop.domain.chat.entity.ChatRoomEntity;
+import be.busstop.domain.chat.entity.ChatRoomParticipant;
 import be.busstop.domain.chat.repository.ChatRoomRepository;
 import be.busstop.domain.chat.service.ChatService;
 import be.busstop.domain.notification.service.NotificationService;
@@ -21,7 +22,6 @@ import be.busstop.global.responseDto.ApiResponse;
 import be.busstop.global.security.jwt.JwtUtil;
 import be.busstop.global.utils.ResponseUtils;
 import be.busstop.global.utils.S3;
-import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,10 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static be.busstop.global.stringCode.ErrorCodeEnum.*;
@@ -51,7 +48,6 @@ import static be.busstop.global.utils.ResponseUtils.okWithMessage;
 
 @Slf4j
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class PostService {
 
@@ -64,55 +60,56 @@ public class PostService {
     private final JwtUtil jwtUtil;
     private final S3 s3;
 
+    @Transactional(readOnly = true)
     public ApiResponse<?> searchPost(PostSearchCondition condition, Pageable pageable) {
         return ok(postRepository.searchPostByPage(condition, pageable));
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public ApiResponse<?> getSinglePost(Long postId, HttpServletRequest req) {
         String token = jwtUtil.getTokenFromHeader(req);
         String subStringToken;
         boolean isComplete = false;
+        boolean isAlreadyApplicant = false;
+        boolean isParticipants = false;
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new InvalidConditionException(POST_NOT_EXIST));
+
         if (token != null) {
             subStringToken = jwtUtil.substringHeaderToken(token);
-            Claims userInfo = jwtUtil.getUserInfoFromToken(subStringToken);
-            Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("?"));
-            User user = userRepository.findByNickname(userInfo.getSubject()).orElseThrow(() -> new IllegalArgumentException("?"));
+            String userNickname = jwtUtil.getNickNameFromToken(subStringToken);
+            User user = userRepository.findByNickname(userNickname)
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
+            // 사용자가 이미 지원자인 경우 isAlreadyApplicant를 true로 설정
+            if (post.getApplicants().stream()
+                    .anyMatch(applicant -> applicant.getNickname().equals(user.getNickname()))
+                    || getChatParticipantNicknames(post.getChatroomId()).contains(user.getNickname())) {
+                isAlreadyApplicant = true;
+            }
+            if (getChatParticipantNicknames(post.getChatroomId()).contains(user.getNickname())) {
+                isParticipants = true;
+            }
             if (postStatusRepository.findByPostAndUser(post, user).isPresent()) {
                 isComplete = true;
             }
+        } else {
+
+            isAlreadyApplicant = false;
+            isParticipants = false;
         }
-        Post post = postRepository.findDetailPostWithParticipants(postId).orElseThrow(() ->
-                new InvalidConditionException(POST_NOT_EXIST));
 
         log.info("게시물 ID '{}' 조회 성공", postId);
         post.increaseViews();
 
         // 채팅방 참여자의 닉네임 가져오기
-        List<String> chatParticipants = getChatParticipants(post.getChatroomId());
+        List<Map<String, String>> chatParticipants = getChatParticipants(post.getChatroomId());
         List<PostApplicant> applicants = getApplicants(post.getId());
 
-        return ok(new PostResponseDto(post, isComplete, chatParticipants, applicants));
+        return ok(new PostResponseDto(post, isComplete, isAlreadyApplicant, isParticipants, chatParticipants, applicants));
     }
 
-
-
-    private List<String> getChatParticipants(String chatRoomId) {
-        ChatRoomEntity chatRoom = chatRoomRepository.findById(chatRoomId).orElse(null);
-        if (chatRoom != null) {
-            return chatRoom.getChatRoomParticipants().stream()
-                    .map(participant -> {
-                        String userInfo = participant.getNickname() +
-                                ", " +
-                                participant.getAge() + ", " +
-                                participant.getGender();
-                        return userInfo;
-                    })
-                    .collect(Collectors.toList());
-        }
-        return List.of();
-    }
 
     @Transactional
     public ApiResponse<?> approveOrDenyParticipant(User actionUser, Long postId, Long userId, boolean isApprove) {
@@ -152,20 +149,30 @@ public class PostService {
     }
 
     // 참여승인 메서드
+    @Transactional
     public ApiResponse<?> approveParticipant(User approver, Long postId, Long userId) {
         return approveOrDenyParticipant(approver, postId, userId, true);
     }
 
     // 참여거부 메서드
+    @Transactional
     public ApiResponse<?> denyParticipant(User denier, Long postId, Long userId) {
         return approveOrDenyParticipant(denier, postId, userId, false);
     }
-
 
     @Transactional
     public ApiResponse<?> addApplicant(User applicantUser, Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 게시글 정보입니다."));
+
+        // 게시글 작성자가 본인의 게시물에 참가신청을 할 수 없도록 예외처리
+        if (post.getUser().getId().equals(applicantUser.getId())) {
+            return ResponseUtils.customError(CANNOT_APPLY_TO_OWN_POST);
+        }
+
+        if (post.isUserAlreadyApplicant(applicantUser.getNickname())) {
+            return ResponseUtils.customError(ALREADY_APPLICANT);
+        }
 
         PostApplicant applicant = new PostApplicant(
                 applicantUser.getId(),
@@ -176,14 +183,18 @@ public class PostService {
                 applicantUser.getReportCount(),
                 post
         );
+
         post.getApplicants().add(applicant);
         User master = userRepository.findByNickname(post.getNickname())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
-        notificationService.send(master, AlarmType.eventCreateComment," '" + post.getTitle() + "'방에 참가신청을 하였습니다.",applicant.getNickname(), applicant.getProfileImageUrl(), "/feed/" + post.getId());
+        notificationService.send(master, AlarmType.eventCreateComment,
+                " '" + post.getTitle() + "'방에 참가신청을 하였습니다.", applicant.getNickname(),
+                applicant.getProfileImageUrl(), "/feed/" + post.getId());
+
         return ApiResponse.success("채팅 참가신청 성공");
     }
 
-
+    @Transactional(readOnly = true)
     public List<PostApplicant> getApplicants(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 게시글 정보입니다."));
@@ -210,13 +221,33 @@ public class PostService {
         log.info("'{}'님이 게시물 ID '{}'를 삭제했습니다.", user.getNickname(), postId);
         return okWithMessage(POST_DELETE_SUCCESS);
     }
-    @Transactional
+    @Transactional(readOnly = true)
     public ApiResponse<?> getRandomPosts(Pageable pageable) {
         List<Post> randomPosts = getRandomPostsFromDatabase(pageable);
 
         return ApiResponse.success(randomPosts.stream()
                 .map(this::mapToPostResponseDto)
                 .collect(Collectors.toList()));
+    }
+
+    @Transactional
+    @Async
+    @Scheduled(cron = "0 0 0 * * *")
+    public void checkEndTime() throws ParseException {
+        List<Post> posts = postRepository.findAll();
+        for(Post post : posts){
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy'y'MM'm'dd'd'");
+            Date postEndDate = dateFormat.parse(post.getEndDate());
+            if(postEndDate.before(DateTime.now().toDate())){
+                postRepository.updateByStatus(post.getId(), Status.COMPLETED);
+            }
+        }
+    }
+
+    private List<Post> getRandomPostsFromDatabase() {
+        List<Post> allPosts = postRepository.findAll();
+        Collections.shuffle(allPosts);
+        return allPosts;
     }
 
     private List<Post> getRandomPostsFromDatabase(Pageable pageable) {
@@ -237,12 +268,33 @@ public class PostService {
         return allPosts.subList(startIdx, endIdx);
     }
 
-    @Transactional(readOnly = true)
-    public List<Post> getRandomPostsFromDatabase() {
-        List<Post> allPosts = postRepository.findAll();
-        Collections.shuffle(allPosts);
-        return allPosts;
+    private List<String> getChatParticipantNicknames(String chatRoomId) {
+        ChatRoomEntity chatRoom = chatRoomRepository.findById(chatRoomId).orElse(null);
+        if (chatRoom != null) {
+            return chatRoom.getChatRoomParticipants().stream()
+                    .map(ChatRoomParticipant::getNickname)
+                    .collect(Collectors.toList());
+        }
+        return Collections.emptyList();
     }
+
+    private List<Map<String, String>> getChatParticipants(String chatRoomId) {
+        ChatRoomEntity chatRoom = chatRoomRepository.findById(chatRoomId).orElse(null);
+        if (chatRoom != null) {
+            return chatRoom.getChatRoomParticipants().stream()
+                    .map(participant -> {
+                        Map<String, String> userInfo = new HashMap<>();
+                        userInfo.put("nickname", participant.getNickname());
+                        userInfo.put("age", String.valueOf(participant.getAge()));
+                        userInfo.put("gender", participant.getGender());
+                        userInfo.put("profileImageUrl", participant.getProfileImageUrl());
+                        return userInfo;
+                    })
+                    .collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
+
 
     public PostResponseDto mapToPostResponseDto(Post post) {
         return new PostResponseDto(
@@ -285,19 +337,5 @@ public class PostService {
 
         log.info("Post access confirmed: postId={}, user={}", postId, user.getId());
         return post;
-    }
-
-    @Transactional
-    @Async
-    @Scheduled(cron = "0 0 0 * * *")
-    public void checkEndTime() throws ParseException {
-        List<Post> posts = postRepository.findAll();
-        for(Post post : posts){
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy'y'MM'm'dd'd'");
-            Date postEndDate = dateFormat.parse(post.getEndDate());
-            if(postEndDate.before(DateTime.now().toDate())){
-                postRepository.updateByStatus(post.getId(), Status.COMPLETED);
-            }
-        }
     }
 }

@@ -57,16 +57,17 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             UserDetailsImpl userDetails = loadUserByUsername(loginRequestDto.getNickname());
 
             if (userDetails == null) {
-                sendErrorResponse(response, "닉네임이 올바르지 않습니다.", HttpServletResponse.SC_UNAUTHORIZED);
+                sendErrorResponse(response, "유저 고유번호가 올바르지 않습니다.", HttpServletResponse.SC_UNAUTHORIZED);
                 return null;
             }
 
             if (userDetails.getUser().getRole() == UserRoleEnum.BLACK) {
-                sendErrorResponse(response, "관리자에 의해 정지된 계정입니다.", HttpServletResponse.SC_UNAUTHORIZED);
-                return null;
+                ApiResponse<?> errorResponse = ApiResponse.customErrorWithNickname(ErrorCodeEnum.USER_BLACKLISTED, userDetails.getNickname());
+                sendJsonResponse(response, errorResponse); // 로그인 실패 시 응답 전송
+                return null; // 인증 실패이므로 null 반환
             }
 
-
+            // 정상적인 경우, Spring Security의 인증 매니저에게 인증 처리를 위임
             return getAuthenticationManager().authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginRequestDto.getNickname(),
@@ -76,9 +77,11 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             );
         } catch (IOException e) {
             log.error("로그인 시도 중 예외 발생: {}", e.getMessage());
-            throw new RuntimeException(e.getMessage());
+            throw new AuthenticationException("로그인 중 오류가 발생했습니다.") {
+            };
         }
     }
+
 
     private void sendErrorResponse(HttpServletResponse response, String errorMessage, int statusCode) throws IOException {
         response.setContentType("application/json");
@@ -130,7 +133,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         ObjectMapper objectMapper = new ObjectMapper();
 
         // 사용자 정보 가져오기
-        String username = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
+        String userCode = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
+        String nickname = ((UserDetailsImpl) authResult.getPrincipal()).getNickname();
         Long userId = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getId();
         String age = (((UserDetailsImpl) authResult.getPrincipal()).getUser().getAge());
         String gender = (((UserDetailsImpl) authResult.getPrincipal()).getUser().getGender());
@@ -140,14 +144,14 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         // 카카오 로그인의 경우 username에 카카오 이메일 정보가 담겨있을 것이므로 해당 값을 그대로 사용
 
-        String token = jwtUtil.createToken(String.valueOf(userId),username, age, gender, role, profileImageUrl, Category.valueOf(interest));
-        String refreshToken = jwtUtil.createRefreshToken(String.valueOf(userId),username, role, profileImageUrl);
+        String token = jwtUtil.createToken(String.valueOf(userId),userCode, nickname, age, gender, role, profileImageUrl, Category.valueOf(interest));
+        String refreshToken = jwtUtil.createRefreshToken(String.valueOf(userId),userCode, nickname, age, gender, role,Category.valueOf(interest), profileImageUrl);
         jwtUtil.addJwtHeaders(token,refreshToken, response);
 
 
         // refresh 토큰은 redis에 저장
         RefreshToken refresh = RefreshToken.builder()
-                .id(username)
+                .id(userCode)
                 .refreshToken(refreshToken)
                 .build();
         redisRepository.save(refresh);
@@ -183,6 +187,13 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(jsonResponse);
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    }
+
+    private void sendJsonResponse(HttpServletResponse response, ApiResponse<?> apiResponse) throws IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(new ObjectMapper().writeValueAsString(apiResponse));
+        response.getWriter().flush();
     }
 
 }

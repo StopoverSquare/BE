@@ -85,9 +85,14 @@ public class JwtUtil {
             log.error(e.getMessage());
         }
     }
+
+    public String getUserCodeFromToken(String token) {
+        Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+        return claims.get("sub", String.class);
+    }
     public String getNickNameFromToken(String token) {
         Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
-        return claims.getSubject();
+        return claims.get("nickname", String.class);
     }
     public String getUserIdFromToken(String token) {
         Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
@@ -124,11 +129,12 @@ public class JwtUtil {
         return null;
     }
 
-    public String createToken(String userId, String username, String age, String gender, UserRoleEnum role, String profileImageUrl, Category interest) {
+    public String createToken(String userId, String userCode, String nickname, String age, String gender, UserRoleEnum role, String profileImageUrl, Category interest) {
         Date date = new Date();
         return BEARER_PREFIX +
                 Jwts.builder()
-                        .setSubject(username)
+                        .setSubject(userCode)
+                        .claim("nickname", nickname)
                         .claim("userId", userId)
                         .claim("age", age)
                         .claim("gender", gender)
@@ -141,12 +147,16 @@ public class JwtUtil {
                         .compact();
     }
 
-    public String createRefreshToken(String userId, String username, UserRoleEnum role, String profileImageUrl) {
+    public String createRefreshToken(String userId, String userCode,String nickname, String age, String gender,  UserRoleEnum role, Category interest, String profileImageUrl) {
         Date date = new Date();
         String refreshToken = Jwts.builder()
-                .setSubject(username)
+                .setSubject(userCode)
+                .claim("nickname", nickname)
                 .claim("userId", userId)
+                .claim("age", age)
+                .claim("gender", gender)
                 .claim(AUTHORIZATION_KEY, role)
+                .claim("interest", interest)
                 .claim("profileImageUrl", profileImageUrl)
                 .setExpiration(new Date(date.getTime() + REFRESH_TOKEN_EXPIRE_TIME)) // 만료시간
                 .setIssuedAt(date)
@@ -210,8 +220,12 @@ public class JwtUtil {
             String newAccessToken = BEARER_PREFIX +
                     Jwts.builder()
                             .setSubject(id) // 사용자 식별
+                            .claim("nickname", claims.get("nickname",String.class))
                             .claim("userId", claims.get("userId", String.class)) // userId 추가
+                            .claim("age", claims.get("age",String.class))
+                            .claim("gender",claims.get("gender",String.class))
                             .claim(AUTHORIZATION_KEY, role)
+                            .claim("interest", claims.get("interest",String.class))
                             .claim("profileImageUrl", claims.get("profileImageUrl", String.class))
                             .setExpiration(new Date(date.getTime() + 5 * 60 * 1000L)) // 만료 시간
                             .setIssuedAt(date)
@@ -236,15 +250,15 @@ public class JwtUtil {
 
                 if (redisStoredRefreshToken != null && validateToken(redisStoredRefreshToken)) {
                     String RefreshTokenByUserId = getUserIdFromToken(decryptedRefreshToken);
-                    String RefreshTokenByNickname = getNickNameFromToken(decryptedRefreshToken);
+                    String RefreshTokenByUserCode = getUserCodeFromToken(decryptedRefreshToken);
 
                     String redisRfTokenByUserId = getUserIdFromToken(redisStoredRefreshToken);
-                    String redisRfTokenByNickname = getNickNameFromToken(redisStoredRefreshToken);
+                    String redisRfTokenByUserCode = getUserCodeFromToken(redisStoredRefreshToken);
 
                     log.info("레디스에서 리프레시 토큰 넘어왔나?={}", redisStoredRefreshToken);
 
                     if (RefreshTokenByUserId.equals(redisRfTokenByUserId)
-                            && RefreshTokenByNickname.equals(redisRfTokenByNickname)) {
+                            && RefreshTokenByUserCode.equals(redisRfTokenByUserCode)) {
                         String newAccessToken = createAccessTokenFromRefreshToken(decryptedRefreshToken);
                         addJwtHeader(newAccessToken, response);
                         log.info("리프레시 토큰으로 새로운 액세스 토큰 발급");
