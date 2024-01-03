@@ -1,5 +1,6 @@
 package be.busstop.domain.user.controller;
 
+import be.busstop.domain.statistics.service.LoginStaticService;
 import be.busstop.domain.user.entity.User;
 import be.busstop.domain.user.entity.UserRoleEnum;
 import be.busstop.domain.user.service.KakaoService;
@@ -28,6 +29,7 @@ import java.io.IOException;
 public class KakaoController {
 
     private final KakaoService kakaoService;
+    private final LoginStaticService loginStaticService;
 
     @Operation(summary = "인가코드 전달 받은 후 카카오로부터 사용자 정보 발급 -> 최종 토큰 반환")
     @Transactional
@@ -46,6 +48,7 @@ public class KakaoController {
 
         log.info("카카오 로그인 성공. 유저 ID: {}", user.getId());
         kakaoService.addToken(user, response);
+        loginStaticService.updateLoginStatic();
         return ApiResponse.okWithMessage(SuccessCodeEnum.USER_LOGIN_SUCCESS);
     }
 }
