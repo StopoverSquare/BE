@@ -1,5 +1,6 @@
 package be.busstop.global.config;
 
+import be.busstop.domain.statistics.service.LoginStaticService;
 import be.busstop.domain.user.repository.UserRepository;
 import be.busstop.global.security.UserDetailsServiceImpl;
 import be.busstop.global.security.jwt.*;
@@ -34,6 +35,7 @@ public class WebSecurityConfig {
     private final RefreshTokenRedisRepository redisRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final LoginStaticService loginStaticService;
 
 
     @Bean
@@ -49,7 +51,7 @@ public class WebSecurityConfig {
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception {
-        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtUtil, redisRepository, userRepository,passwordEncoder);
+        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtUtil, redisRepository, userRepository,passwordEncoder, loginStaticService);
         filter.setAuthenticationManager(authenticationManager(authenticationConfiguration));
         return filter;
     }
