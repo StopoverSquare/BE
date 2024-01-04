@@ -210,6 +210,7 @@ public class KakaoService {
                 .build();
         log.info("리프레쉬 토큰 저장 성공. 유저 ID: {}", user.getId());
         redisRepository.save(refresh);
+
         return ApiResponse.success("토큰 발급 성공 !");
     }
 }

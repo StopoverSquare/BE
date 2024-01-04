@@ -84,7 +84,6 @@ public class MyPageService {
     @Transactional
     public ApiResponse<?> updateUserDetails(Long userId, DetailRequestDto detailRequestDto,
                                             User user, HttpServletResponse response) {
-        log.info("'{}'님이 프로필 정보를 변경했습니다.", user.getNickname());
 
         User existingUser = findUser(userId);
 
