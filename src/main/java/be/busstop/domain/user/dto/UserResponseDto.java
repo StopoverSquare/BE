@@ -17,6 +17,7 @@ public class UserResponseDto {
     private String profileImageUrl;
     private Double mannerTemplate;
     private LocalDateTime createdAt;
+    private LocalDateTime lastAccessed;
     private UserRoleEnum role;
 
     public UserResponseDto(User user) {
@@ -27,6 +28,7 @@ public class UserResponseDto {
         this.profileImageUrl = user.getProfileImageUrl();
         this.mannerTemplate = user.getMannerTemplate();
         this.createdAt = user.getCreatedAt();
+        this.lastAccessed = user.getLastAccessed();
         this.role = user.getRole();
     }
 }

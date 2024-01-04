@@ -4,5 +4,5 @@ import be.busstop.domain.salvation.entity.Salvation;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SalvRepository extends JpaRepository<Salvation, Long>,SalvRepositoryCustom {
-
+    boolean existsByTitle(String title);
 }

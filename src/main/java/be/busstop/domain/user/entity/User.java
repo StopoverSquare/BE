@@ -7,6 +7,9 @@ import be.busstop.global.utils.Timestamped;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+import java.util.Date;
+
 import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Entity
@@ -49,6 +52,10 @@ public class User extends Timestamped {
 
     private Double mannerTemplate;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "last_accessed")
+    private LocalDateTime lastAccessed;
+
     @Column
     private String roomId;
     @Column
@@ -65,6 +72,7 @@ public class User extends Timestamped {
         this.role = role;
         this.interest = interest;
         this.mannerTemplate = 36.5;
+        this.lastAccessed = LocalDateTime.now();
     }
 
     @Builder
@@ -115,5 +123,7 @@ public class User extends Timestamped {
         }
         this.reportCount++;
     }
-
+    public void updateLastAccessed() {
+        this.lastAccessed = LocalDateTime.now();
+    }
 }

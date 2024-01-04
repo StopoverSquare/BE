@@ -26,6 +26,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Slf4j
 @Service
@@ -76,6 +77,10 @@ public class KakaoService {
             // 기존 사용자와 연결되는 Kakao 사용자로 등록
             log.info("기존 사용자와 연결되는 카카오 사용자로 등록합니다.");
         }
+        // 현재 접속 시간 업데이트
+        user.updateLastAccessed();
+        // 엔티티 저장
+        userRepository.save(user);
 
         return user;
     }
