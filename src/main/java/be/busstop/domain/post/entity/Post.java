@@ -72,7 +72,7 @@ public class Post extends Timestamped {
     @Column
     private String endTime;
 
-    @ElementCollection
+    @ElementCollection(fetch = LAZY)
     @BatchSize(size = 5)
     @Column
     private List<String> imageUrlList = new ArrayList<>(); // 이미지 URL 리스트
