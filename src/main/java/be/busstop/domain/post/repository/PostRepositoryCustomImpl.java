@@ -6,6 +6,8 @@ import be.busstop.domain.post.dto.PostSearchCondition;
 import be.busstop.domain.post.dto.QPostResponseDto;
 import be.busstop.domain.post.entity.Category;
 import be.busstop.domain.post.entity.QPost;
+import be.busstop.domain.poststatus.entity.PostStatus;
+import be.busstop.domain.poststatus.entity.Status;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +33,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                         categoryEq(condition.getInterest()),
                         dateEq(condition.getEndDate()),
                         titleOrContentEq(condition.getTitleOrContent()),
+                        statusEq(condition.getStatus()),
                         locationEq(condition.getLocation()))
                 .orderBy(QPost.post.createdAt.desc())
                 .offset(pageable.getOffset())
@@ -43,6 +46,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                         categoryEq(condition.getInterest()),
                         dateEq(condition.getEndDate()),
                         titleOrContentEq(condition.getTitleOrContent()),
+                        statusEq(condition.getStatus()),
                         locationEq(condition.getLocation()))
                 .fetchCount();
 
@@ -58,12 +62,13 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
     private BooleanExpression categoryEq(String categoryCond) {
         return hasText(categoryCond) ? QPost.post.category.eq(Category.valueOf(categoryCond)) : null;
     }
+    private BooleanExpression statusEq(String statusCond) {
+        return hasText(statusCond) ? QPost.post.status.eq(Status.valueOf(statusCond)) : null;
+    }
 
     private BooleanExpression titleOrContentEq(String titleOrContent) {
         return hasText(titleOrContent) ?
                 QPost.post.title.contains(titleOrContent)
                         .or(QPost.post.content.contains(titleOrContent)) : null;
     }
-
-
 }

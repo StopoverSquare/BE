@@ -6,11 +6,14 @@ import be.busstop.domain.chat.repository.ChatRoomRepository;
 import be.busstop.domain.chat.service.ChatService;
 import be.busstop.domain.notification.service.NotificationService;
 import be.busstop.domain.notification.util.AlarmType;
+import be.busstop.domain.post.dto.BlockedPostDto;
 import be.busstop.domain.post.dto.PostRequestDto;
 import be.busstop.domain.post.dto.PostResponseDto;
 import be.busstop.domain.post.dto.PostSearchCondition;
+import be.busstop.domain.post.entity.BlockedPost;
 import be.busstop.domain.post.entity.Post;
 import be.busstop.domain.post.entity.PostApplicant;
+import be.busstop.domain.post.repository.BlockedPostRepository;
 import be.busstop.domain.post.repository.PostRepository;
 import be.busstop.domain.poststatus.entity.Status;
 import be.busstop.domain.poststatus.repository.PostStatusRepository;
@@ -40,8 +43,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static be.busstop.global.stringCode.ErrorCodeEnum.*;
-import static be.busstop.global.stringCode.SuccessCodeEnum.POST_CREATE_SUCCESS;
-import static be.busstop.global.stringCode.SuccessCodeEnum.POST_DELETE_SUCCESS;
+import static be.busstop.global.stringCode.SuccessCodeEnum.*;
 import static be.busstop.global.utils.ResponseUtils.ok;
 import static be.busstop.global.utils.ResponseUtils.okWithMessage;
 
@@ -53,6 +55,7 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final PostStatusRepository postStatusRepository;
+    private final BlockedPostRepository blockedPostRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final NotificationService notificationService;
     private final UserRepository userRepository;
@@ -82,6 +85,11 @@ public class PostService {
             User user = userRepository.findByNickname(userNickname)
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
+            // 어드민이나 슈퍼 유저가 아닌 경우에만 차단된 게시글인지 확인
+            if (post.getStatus() == Status.BLOCKED && user.getRole() != UserRoleEnum.ADMIN && user.getRole() != UserRoleEnum.SUPER) {
+                return ResponseUtils.customError(POST_BLOCKED);
+            }
+
             // 사용자가 이미 지원자인 경우 isAlreadyApplicant를 true로 설정
             if (post.getApplicants().stream()
                     .anyMatch(applicant -> applicant.getNickname().equals(user.getNickname()))
@@ -95,7 +103,10 @@ public class PostService {
                 isComplete = true;
             }
         } else {
-
+            // 로그인하지 않은 사용자도 차단 여부 확인
+            if (post.getStatus() == Status.BLOCKED) {
+                return ResponseUtils.customError(POST_BLOCKED);
+            }
             isAlreadyApplicant = false;
             isParticipants = false;
         }
@@ -109,6 +120,7 @@ public class PostService {
 
         return ok(new PostResponseDto(post, isComplete, isAlreadyApplicant, isParticipants, chatParticipants, applicants));
     }
+
 
 
     @Transactional
@@ -201,8 +213,6 @@ public class PostService {
 
         return new ArrayList<>(post.getApplicants());
     }
-
-
     @Transactional
     public ApiResponse<?> createPost(PostRequestDto postRequestDto, List<MultipartFile> images, User user) {
         List<String> imageUrlList = s3.uploads(images);
@@ -221,6 +231,41 @@ public class PostService {
         log.info("'{}'님이 게시물 ID '{}'를 삭제했습니다.", user.getNickname(), postId);
         return okWithMessage(POST_DELETE_SUCCESS);
     }
+    @Transactional
+    public ApiResponse<?> blockPost(Long postId, User user, BlockedPostDto blockedPostDto) {
+        validateAdminRole(user);
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new InvalidConditionException(POST_NOT_EXIST));
+
+        // 게시글 상태를 BLOCKED로 변경
+        post.markBlocked();
+        postRepository.save(post);
+
+        // 차단된 게시글 정보를 BlockedPost 엔티티에 저장
+        BlockedPost blockedPost = new BlockedPost(blockedPostDto, post, user);
+        blockedPostRepository.save(blockedPost);
+
+        log.info("'{}'님이 게시물 ID '{}'를 차단했습니다. 사유: {}", user.getNickname(), postId, blockedPostDto.getContent());
+        return okWithMessage(POST_BLOCK_SUCCESS);
+    }
+    @Transactional
+    public ApiResponse<?> unblockPost(Long postId, User user) {
+        validateAdminRole(user);
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new InvalidConditionException(POST_NOT_EXIST));
+
+        post.markInProgress();
+        postRepository.save(post);
+
+        BlockedPost blockedPost = blockedPostRepository.findByPost(post)
+                .orElseThrow(() -> new InvalidConditionException(POST_NOT_BLOCK));
+
+        blockedPostRepository.delete(blockedPost);
+
+        log.info("'{}'님이 게시물 ID '{}'의 차단을 해제했습니다.", user.getNickname(), postId);
+        return okWithMessage(POST_UNBLOCK_SUCCESS);
+    }
+
     @Transactional(readOnly = true)
     public ApiResponse<?> getRandomPosts(Pageable pageable) {
         List<Post> randomPosts = getRandomPostsFromDatabase(pageable);
@@ -337,5 +382,11 @@ public class PostService {
 
         log.info("Post access confirmed: postId={}, user={}", postId, user.getId());
         return post;
+    }
+
+    private void validateAdminRole(User user) {
+        if (user.getRole() != UserRoleEnum.ADMIN && user.getRole() != UserRoleEnum.SUPER) {
+            throw new IllegalArgumentException("권한이 없습니다.");
+        }
     }
 }
