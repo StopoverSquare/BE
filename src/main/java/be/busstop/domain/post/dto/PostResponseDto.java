@@ -28,6 +28,7 @@ public class PostResponseDto {
     private String content;
     private LocalDateTime createdAt;
     private List<String> imageUrlList;
+    private String thumbnailImageUrl;
     private String endDate;
     private String endTime;
     private String status;
@@ -53,9 +54,7 @@ public class PostResponseDto {
         this.nickname = post.getUser().getNickname();
         this.age = post.getUser().getAge();
         this.gender = post.getUser().getGender();
-        this.imageUrlList = post.getImageUrlList().stream().limit(1)
-                .map(String::new)
-                .collect(Collectors.toList());
+        this.thumbnailImageUrl = post.getThumbnailImageUrl();
         this.content = post.getContent();
         this.createdAt = post.getCreatedAt();
         this.endDate = post.getEndDate();
@@ -98,7 +97,7 @@ public class PostResponseDto {
     // 랜덤 조회
     public PostResponseDto(Long id, Long userId, Category category, String title,
                                String nickname, String age, String gender,
-                               LocalDateTime createdAt, List<String> imageUrlList,
+                               LocalDateTime createdAt, String thumbnailImageUrl,
                                String endDate,String endTime, String location, String profileImageUrl) {
         this.id = id;
         this.userId = userId;
@@ -108,9 +107,7 @@ public class PostResponseDto {
         this.age = age;
         this.gender = gender;
         this.createdAt = createdAt;
-        this.imageUrlList = imageUrlList.stream().limit(1)
-                .map(String::new)
-                .collect(Collectors.toList());
+        this.thumbnailImageUrl = thumbnailImageUrl;
         this.endDate = endDate;
         this.endTime = endTime;
         this.location = location;
@@ -119,7 +116,7 @@ public class PostResponseDto {
     // 마이페이지
     public PostResponseDto(Long id, Long userId, Category category,String status, String title,
                            String nickname, String age, String gender,
-                       String location,String locationDetail, List<String> imageUrlList, String profileImageUrl,int views, LocalDateTime createdAt) {
+                       String location,String locationDetail, String thumbnailImageUrl, String profileImageUrl,int views, LocalDateTime createdAt) {
         this.id = id;
         this.userId = userId;
         this.category = category;
@@ -130,9 +127,7 @@ public class PostResponseDto {
         this.gender = gender;
         this.location = location;
         this.locationDetail = locationDetail;
-        this.imageUrlList = imageUrlList.stream().limit(1)
-                .map(String::new)
-                .collect(Collectors.toList());
+        this.thumbnailImageUrl = thumbnailImageUrl;
         this.profileImageUrl = profileImageUrl;
         this.views = views;
         this.createdAt = createdAt;

@@ -22,9 +22,16 @@ public class PostRequestDto {
     private String endDate;
     private String endTime;
     private List<String> imageUrlList;
+    private String thumbnailImageUrl;
     private Long subLimit;
 
     public void setImageUrlList(List<String> imageUrlList) {
         this.imageUrlList = imageUrlList;
+    }
+    public void setImageUrlListAndThumbnail(List<String> imageUrlList, int thumbnailIndex) {
+        this.imageUrlList = imageUrlList;
+        if (thumbnailIndex >= 0 && thumbnailIndex < imageUrlList.size()) {
+            this.thumbnailImageUrl = imageUrlList.get(thumbnailIndex);
+        }
     }
 }

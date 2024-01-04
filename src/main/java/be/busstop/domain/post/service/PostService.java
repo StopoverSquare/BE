@@ -78,7 +78,7 @@ public class PostService {
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new InvalidConditionException(POST_NOT_EXIST));
-
+        log.info("뭐가 들어오니:{}",token);
         if (token != null) {
             subStringToken = jwtUtil.substringHeaderToken(token);
             String userNickname = jwtUtil.getNickNameFromToken(subStringToken);
@@ -216,6 +216,7 @@ public class PostService {
     @Transactional
     public ApiResponse<?> createPost(PostRequestDto postRequestDto, List<MultipartFile> images, User user) {
         List<String> imageUrlList = s3.uploads(images);
+        postRequestDto.setImageUrlListAndThumbnail(imageUrlList, 0);
         postRequestDto.setImageUrlList(imageUrlList);
         ChatRoomEntity chatRoom = chatService.createRoomByPost(postRequestDto,user);
         String roomId = chatRoom.getRoomId();
@@ -351,7 +352,7 @@ public class PostService {
                 post.getUser().getAge(),
                 post.getUser().getGender(),
                 post.getCreatedAt(),
-                post.getImageUrlList().stream().limit(1).map(String::new).collect(Collectors.toList()),
+                post.getThumbnailImageUrl(),
                 post.getEndDate(),
                 post.getEndTime(),
                 post.getLocation(),

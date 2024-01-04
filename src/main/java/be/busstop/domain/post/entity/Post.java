@@ -33,7 +33,7 @@ public class Post extends Timestamped {
     private Long id;
 
     @JsonIgnore
-    @ManyToOne(fetch = LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
@@ -74,16 +74,16 @@ public class Post extends Timestamped {
     @Column
     private String endTime;
 
-    @ElementCollection(fetch = LAZY)
+    @ElementCollection(fetch = FetchType.LAZY)
     @BatchSize(size = 5)
     @Column
     private List<String> imageUrlList = new ArrayList<>(); // 이미지 URL 리스트
 
+    private String thumbnailImageUrl;
 
     private int views;
 
     private String profileImageUrl;
-
 
     @Enumerated(EnumType.STRING)
     private Status status = Status.IN_PROGRESS;
@@ -109,6 +109,7 @@ public class Post extends Timestamped {
         this.gender = this.user.getGender();
         this.profileImageUrl = this.user.getProfileImageUrl();
         this.imageUrlList = imageUrlList;
+        this.thumbnailImageUrl = postRequestDto.getThumbnailImageUrl();
         this.chatroomId = chatroomId;
 
     }

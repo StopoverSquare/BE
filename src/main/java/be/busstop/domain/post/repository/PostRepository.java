@@ -15,8 +15,9 @@ import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long>, PostRepositoryCustom {
 
-    @EntityGraph(attributePaths = {"applicants"}) // applicants 필드를 함께 로딩
+    @EntityGraph(attributePaths = {"applicants"})
     Optional<Post> findById(Long id);
+
 
     @Transactional
     @Modifying

@@ -62,6 +62,8 @@ public class QPost extends EntityPathBase<Post> {
 
     public final EnumPath<be.busstop.domain.poststatus.entity.Status> status = createEnum("status", be.busstop.domain.poststatus.entity.Status.class);
 
+    public final StringPath thumbnailImageUrl = createString("thumbnailImageUrl");
+
     public final StringPath title = createString("title");
 
     public final be.busstop.domain.user.entity.QUser user;
