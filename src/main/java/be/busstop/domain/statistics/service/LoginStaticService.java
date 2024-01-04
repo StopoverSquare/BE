@@ -10,7 +10,9 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -24,4 +26,21 @@ public class LoginStaticService {
         loginStatic.plusLoginCnt();
         loginStaticRepository.save(loginStatic);
     }
+
+    public Long getTodayCnt(){
+        LocalDate date = LocalDate.now();
+        LoginStatic loginStatic = loginStaticRepository.findByDate(date).orElse(new LoginStatic());
+        return loginStatic.getLoginCnt();
+    }
+
+    public Long getWeekCnt(){
+        LocalDate date = LocalDate.now();
+        List<LoginStatic> loginStatics = loginStaticRepository.findAllByDateBetween(date.minusDays(7), date);
+        long weekCnt = 0L;
+        for(LoginStatic loginStatic : loginStatics){
+            weekCnt += loginStatic.getLoginCnt();
+        }
+        return weekCnt;
+    }
+
 }
