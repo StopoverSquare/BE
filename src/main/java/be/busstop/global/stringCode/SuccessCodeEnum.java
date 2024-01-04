@@ -10,6 +10,8 @@ public enum SuccessCodeEnum {
     USER_WITHRAW_SUCCESS("회원탈퇴 성공"),
     POST_CREATE_SUCCESS("게시글 작성 성공"),
     POST_DELETE_SUCCESS("게시글 삭제 성공"),
+    POST_BLOCK_SUCCESS("게시글 차단 성공"),
+    POST_UNBLOCK_SUCCESS("게시글 차단 해제 성공"),
     POST_SALVATION_SUCCESS("구제글 작성 성공"),
     SALVATION_SUCCESS("유저 전환 성공"),
     LIKE_SUCCESS("좋아요 성공"),

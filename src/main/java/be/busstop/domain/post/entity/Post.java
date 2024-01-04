@@ -1,5 +1,6 @@
 package be.busstop.domain.post.entity;
 
+import be.busstop.domain.post.dto.BlockedPostDto;
 import be.busstop.domain.post.dto.PostRequestDto;
 import be.busstop.domain.poststatus.entity.Status;
 import be.busstop.domain.user.entity.User;
@@ -11,6 +12,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.springframework.security.core.parameters.P;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,7 +74,7 @@ public class Post extends Timestamped {
     @Column
     private String endTime;
 
-    @ElementCollection
+    @ElementCollection(fetch = LAZY)
     @BatchSize(size = 5)
     @Column
     private List<String> imageUrlList = new ArrayList<>(); // 이미지 URL 리스트
@@ -86,11 +88,14 @@ public class Post extends Timestamped {
     @Enumerated(EnumType.STRING)
     private Status status = Status.IN_PROGRESS;
 
+    @OneToMany(mappedBy = "post")
+    private List<BlockedPost> blockedPosts = new ArrayList<>();
+
     @Column
     private String chatroomId;
 
 
-    public Post(PostRequestDto postRequestDto, List<String> imageUrlList, User user, String chatroomId ) {
+    public Post(PostRequestDto postRequestDto, List<String> imageUrlList, User user, String chatroomId) {
         this.user = user;
         this.category = postRequestDto.getCategory();
         this.title = postRequestDto.getTitle();
@@ -120,13 +125,20 @@ public class Post extends Timestamped {
         return applicants.stream()
                 .anyMatch(applicant -> applicant.getNickname().equals(applicantNickname));
     }
+
     public void markInProgress() {
         this.status = Status.IN_PROGRESS;
+        // 차단이 해제될 때 [차단 된 게시물]이라는 문자열을 title에서 제거
+        if (this.title != null && this.title.startsWith("[차단 된 게시물] ")) {
+            this.title = this.title.substring("[차단 된 게시물] ".length());
+        }
     }
+
     public void markClosed() {
         this.status = Status.COMPLETED;
     }
-
-
-
+    public void markBlocked() {
+        this.status = Status.BLOCKED;
+        this.title = "[차단 된 게시물] " + this.title;
+    }
 }

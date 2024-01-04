@@ -1,5 +1,6 @@
 package be.busstop.domain.post.controller;
 
+import be.busstop.domain.post.dto.BlockedPostDto;
 import be.busstop.domain.post.dto.PostRequestDto;
 import be.busstop.domain.post.dto.PostSearchCondition;
 import be.busstop.domain.post.service.PostService;
@@ -46,13 +47,27 @@ public class PostController {
     public ApiResponse<?> readOnePost(@PathVariable Long postId, HttpServletRequest req) {
         return postService.getSinglePost(postId, req);
     }
-
     @Operation(summary = "게시글 작성")
     @PostMapping
     public ApiResponse<?> createPost(@Valid @RequestPart(value = "data") PostRequestDto postRequestDto,
                                      @RequestPart(value = "file") List<MultipartFile> images,
                                      @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
         return postService.createPost(postRequestDto, images, userDetailsImpl.getUser());
+    }
+
+    @Operation(summary = "게시글 차단")
+    @PostMapping("/block/{postId}")
+    public ApiResponse<?> blockPost(@Valid @RequestBody BlockedPostDto blockedPostDto,
+                                    @PathVariable Long postId,
+                                    @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
+        return postService.blockPost(postId, userDetailsImpl.getUser(), blockedPostDto);
+    }
+
+    @Operation(summary = "게시글 차단해제")
+    @PostMapping("/unBlock/{postId}")
+    public ApiResponse<?> unBlockPost(@PathVariable Long postId,
+                                      @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
+        return postService.unblockPost(postId, userDetailsImpl.getUser());
     }
 
     @Operation(summary = "게시글 삭제")
@@ -63,7 +78,6 @@ public class PostController {
     }
 
     @Operation(summary = "게시글 참여자 승인")
-    @Transactional
     @PostMapping("/{postId}/applicants/{userId}")
     public ApiResponse<?> approveParticipant(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                              @PathVariable Long postId,
@@ -72,7 +86,6 @@ public class PostController {
     }
 
     @Operation(summary = "게시글 참여자 거부")
-    @Transactional
     @DeleteMapping ("/{postId}/applicants/{userId}")
     public ApiResponse<?> denyParticipant(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                              @PathVariable Long postId,
@@ -81,7 +94,6 @@ public class PostController {
     }
 
     @Operation(summary = "게시글 참여신청")
-    @Transactional
     @PostMapping("/{postId}/applicants")
     public ApiResponse<?> addApplicant(@AuthenticationPrincipal UserDetailsImpl userDetailsImpl,
                                        @PathVariable Long postId) {

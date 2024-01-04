@@ -17,6 +17,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByNickname(String nickname);
 
     Optional<User> findByUserCode(String userCode);
+    List<User> findByNicknameContainingIgnoreCase(String nickname);
+    List<User> findByNicknameContainingIgnoreCaseAndRole(String nickname, UserRoleEnum role);
 
     @Query("SELECT p FROM Post p WHERE p.user.id = :userId")
     List<Post> findPostsByUserId(@Param("userId") Long userId);

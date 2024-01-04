@@ -28,6 +28,8 @@ public class QPost extends EntityPathBase<Post> {
 
     public final ListPath<PostApplicant, QPostApplicant> applicants = this.<PostApplicant, QPostApplicant>createList("applicants", PostApplicant.class, QPostApplicant.class, PathInits.DIRECT2);
 
+    public final ListPath<BlockedPost, QBlockedPost> blockedPosts = this.<BlockedPost, QBlockedPost>createList("blockedPosts", BlockedPost.class, QBlockedPost.class, PathInits.DIRECT2);
+
     public final EnumPath<Category> category = createEnum("category", Category.class);
 
     public final StringPath chatroomId = createString("chatroomId");

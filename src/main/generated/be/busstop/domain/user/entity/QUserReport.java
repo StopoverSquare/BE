@@ -36,6 +36,8 @@ public class QUserReport extends EntityPathBase<UserReport> {
 
     public final EnumPath<UserReportEnum> report = createEnum("report", UserReportEnum.class);
 
+    public final StringPath reportDetail = createString("reportDetail");
+
     public final NumberPath<Long> reportedUserId = createNumber("reportedUserId", Long.class);
 
     public final QUser reporter;
