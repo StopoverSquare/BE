@@ -18,13 +18,16 @@ public class GenderStatic {
     private LocalDate date = LocalDate.now();
 
     @Column
-    private Long maleCnt;
+    @Builder.Default
+    private Long maleCnt = 0L;
 
     @Column
-    private Long femaleCnt;
+    @Builder.Default
+    private Long femaleCnt = 0L;
 
     @Column
-    private Long etcCnt;
+    @Builder.Default
+    private Long etcCnt = 0L;
 
     public void plusCnt(String gender) {
         switch(gender){

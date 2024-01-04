@@ -1,5 +1,6 @@
 package be.busstop.domain.statistics.service;
 
+import be.busstop.domain.statistics.dto.GenderStaticResponseDto;
 import be.busstop.domain.statistics.entity.AgeStatic;
 import be.busstop.domain.statistics.entity.CategoryStatic;
 import be.busstop.domain.statistics.entity.GenderStatic;
@@ -34,5 +35,19 @@ public class GenderStaticService {
         }
         genderStaticRepository.save(genderStatic);
 
+    }
+
+    public GenderStaticResponseDto getAllGenderStatic(){
+        List<GenderStatic> genderStatics = genderStaticRepository.findAll();
+        Long maleCnt = 0L;
+        Long femaleCnt = 0L;
+        for(GenderStatic genderStatic : genderStatics){
+            maleCnt += genderStatic.getMaleCnt();
+            femaleCnt += genderStatic.getFemaleCnt();
+        }
+        return GenderStaticResponseDto.builder()
+                .maleCnt(maleCnt)
+                .femaleCnt(femaleCnt)
+                .build();
     }
 }
