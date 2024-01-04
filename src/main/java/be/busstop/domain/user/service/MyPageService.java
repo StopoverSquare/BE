@@ -46,6 +46,7 @@ public class MyPageService {
                     user.getAge(),
                     user.getGender(),
                     user.getProfileImageUrl(),
+                    user.getMannerTemplate(),
                     userPosts
             );
             return responseDto;

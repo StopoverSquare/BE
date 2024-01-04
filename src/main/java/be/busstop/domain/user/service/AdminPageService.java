@@ -64,7 +64,9 @@ public class AdminPageService {
     }
     @Transactional
     public ApiResponse<?> makeUserAdmin(User user, Long userId) {
-        validateAdminRole(user);
+        if (user.getRole() != UserRoleEnum.SUPER) {
+            throw new IllegalArgumentException("권한이 없습니다.");
+        }
         User admin = findUserById(userId);
         admin.setRoleAdmin();
         userRepository.save(admin);

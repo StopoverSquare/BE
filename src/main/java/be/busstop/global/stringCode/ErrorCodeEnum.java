@@ -13,6 +13,8 @@ public enum ErrorCodeEnum {
     CANNOT_APPLY_TO_OWN_POST(HttpStatus.BAD_REQUEST, "작성자는 신청할 수 없습니다."),
     DUPLICATE_USERNAME_EXIST(HttpStatus.BAD_REQUEST, "중복된 사용자가 존재합니다."),
     POST_NOT_EXIST(HttpStatus.NOT_FOUND, "존재하지 않는 게시글입니다."),
+    POST_NOT_BLOCK(HttpStatus.BAD_REQUEST,"게시물이 차단되어 있지 않습니다."),
+    POST_BLOCKED(HttpStatus.BAD_REQUEST, "관리자에 의해 차단된 게시글입니다."),
     POST_DELETE_FAILED(HttpStatus.BAD_REQUEST,"신고내역이 존재하는 게시글 입니다. 관리자만 삭제가 가능합니다."),
     CATEGORY_NOT_EXIST(HttpStatus.NOT_FOUND, "존재하지 않는 카테고리입니다."),
     COMMENT_NOT_EXIST(HttpStatus.NOT_FOUND, "존재하지 않는 댓글입니다."),

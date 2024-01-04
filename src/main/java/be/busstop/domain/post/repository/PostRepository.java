@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long>, PostRepositoryCustom {
@@ -21,4 +22,5 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostRepositor
     @Modifying
     @Query("UPDATE Post p SET p.status = :newStatus WHERE p.id = :postId")
     void updateByStatus(@Param("postId") Long postId, @Param("newStatus") Status newStatus);
+
 }

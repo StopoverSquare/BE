@@ -43,6 +43,8 @@ public class PostStatus {
         this.status = Status.IN_PROGRESS;
     }
 
+    public void markInBlocked() {this.status = Status.BLOCKED;}
+
     public void markCompleted() {
         this.status = Status.COMPLETED;
     }

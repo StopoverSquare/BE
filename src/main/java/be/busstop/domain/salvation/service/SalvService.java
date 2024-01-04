@@ -114,7 +114,7 @@ public class SalvService {
     }
 
     private void validateAdminRole(User user) {
-        if (user.getRole() != UserRoleEnum.ADMIN) {
+        if (user.getRole() != UserRoleEnum.ADMIN && user.getRole() != UserRoleEnum.SUPER) {
             throw new IllegalArgumentException("권한이 없습니다.");
         }
     }
