@@ -13,6 +13,7 @@ public enum SuccessCodeEnum {
     POST_BLOCK_SUCCESS("게시글 차단 성공"),
     POST_UNBLOCK_SUCCESS("게시글 차단 해제 성공"),
     POST_SALVATION_SUCCESS("구제글 작성 성공"),
+    POST_BLOCKED("관리자에 의해 차단된 게시물입니다."),
     SALVATION_SUCCESS("유저 전환 성공"),
     LIKE_SUCCESS("좋아요 성공"),
     LIKE_CANCEL_SUCCESS("좋아요 취소"),
