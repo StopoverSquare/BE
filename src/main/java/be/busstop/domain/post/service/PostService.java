@@ -23,6 +23,7 @@ import be.busstop.domain.user.repository.UserRepository;
 import be.busstop.global.exception.InvalidConditionException;
 import be.busstop.global.responseDto.ApiResponse;
 import be.busstop.global.security.jwt.JwtUtil;
+import be.busstop.global.stringCode.SuccessCodeEnum;
 import be.busstop.global.utils.ResponseUtils;
 import be.busstop.global.utils.S3;
 import jakarta.servlet.http.HttpServletRequest;
@@ -44,6 +45,7 @@ import java.util.stream.Collectors;
 
 import static be.busstop.global.stringCode.ErrorCodeEnum.*;
 import static be.busstop.global.stringCode.SuccessCodeEnum.*;
+import static be.busstop.global.stringCode.SuccessCodeEnum.POST_BLOCKED;
 import static be.busstop.global.utils.ResponseUtils.ok;
 import static be.busstop.global.utils.ResponseUtils.okWithMessage;
 
@@ -87,7 +89,7 @@ public class PostService {
 
             // 어드민이나 슈퍼 유저가 아닌 경우에만 차단된 게시글인지 확인
             if (post.getStatus() == Status.BLOCKED && user.getRole() != UserRoleEnum.ADMIN && user.getRole() != UserRoleEnum.SUPER) {
-                return ResponseUtils.customError(POST_BLOCKED);
+                return ResponseUtils.okWithMessage(POST_BLOCKED);
             }
 
             // 사용자가 이미 지원자인 경우 isAlreadyApplicant를 true로 설정
@@ -105,7 +107,7 @@ public class PostService {
         } else {
             // 로그인하지 않은 사용자도 차단 여부 확인
             if (post.getStatus() == Status.BLOCKED) {
-                return ResponseUtils.customError(POST_BLOCKED);
+                return ResponseUtils.okWithMessage(POST_BLOCKED);
             }
             isAlreadyApplicant = false;
             isParticipants = false;
