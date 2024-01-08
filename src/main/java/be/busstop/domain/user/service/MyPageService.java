@@ -46,6 +46,7 @@ public class MyPageService {
                     user.getAge(),
                     user.getGender(),
                     user.getProfileImageUrl(),
+                    user.getInterest(),
                     user.getMannerTemplate(),
                     userPosts
             );
@@ -60,7 +61,6 @@ public class MyPageService {
         String nickname = checkDuplicateNicknameDto.getNickname();
         if(userRepository.existsByNickname(nickname)) throw new IllegalArgumentException("중복된 아이디입니다.");
         return ResponseUtils.okWithMessage(SuccessCodeEnum.NICKNAME_UNIQUE_SUCCESS);
-
     }
 
     @Transactional
