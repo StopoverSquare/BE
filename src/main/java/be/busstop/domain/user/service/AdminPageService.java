@@ -11,6 +11,9 @@ import be.busstop.global.exception.InvalidConditionException;
 import be.busstop.global.responseDto.ApiResponse;
 import be.busstop.global.stringCode.ErrorCodeEnum;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -28,40 +31,53 @@ public class AdminPageService {
     private final UserRepository userRepository;
     private final UserReportRepository userReportRepository;
     @Transactional(readOnly = true)
-    public ApiResponse<?> userList(User user, @RequestParam(required = false) String nickname) {
+    public ApiResponse<Page<UserResponseDto>> userList(User user,
+                                                       @RequestParam(required = false) String nickname,
+                                                       @RequestParam(defaultValue = "0") int page,
+                                                       @RequestParam(defaultValue = "10") int size) {
         validateAdminRole(user);
 
-        List<User> userList;
+        Page<User> userPage;
 
         if (StringUtils.hasText(nickname)) {
             // 닉네임이 제공된 경우 해당 닉네임으로 사용자를 검색
-            userList = userRepository.findByNicknameContainingIgnoreCase(nickname);
+            Pageable pageable = PageRequest.of(page, size);
+            userPage = userRepository.findByNicknameContainingIgnoreCase(nickname, pageable);
         } else {
             // 닉네임이 제공되지 않은 경우 전체 사용자 목록 반환
-            userList = userRepository.findAll();
+            Pageable pageable = PageRequest.of(page, size);
+            userPage = userRepository.findAll(pageable);
         }
 
-        List<UserResponseDto> userResponseDtoList = userList.stream().map(UserResponseDto::new).toList();
+        Page<UserResponseDto> userResponseDtoPage = userPage.map(UserResponseDto::new);
 
-        return ApiResponse.success(userResponseDtoList);
+        return ApiResponse.success(userResponseDtoPage);
     }
+
     @Transactional(readOnly = true)
-    public ApiResponse<?> userBlackList(User user, @RequestParam(required = false) String nickname) {
+    public ApiResponse<Page<UserResponseDto>> userBlackList(User user,
+                                                            @RequestParam(required = false) String nickname,
+                                                            @RequestParam(defaultValue = "0") int page,
+                                                            @RequestParam(defaultValue = "10") int size) {
         validateAdminRole(user);
 
-        List<User> blackUserList;
+        Page<User> blackUserPage;
 
         if (StringUtils.hasText(nickname)) {
             // 닉네임이 제공된 경우 해당 닉네임으로 사용자를 검색
-            blackUserList = userRepository.findByNicknameContainingIgnoreCaseAndRole(nickname,UserRoleEnum.BLACK);
+            Pageable pageable = PageRequest.of(page, size);
+            blackUserPage = userRepository.findByNicknameContainingIgnoreCaseAndRole(nickname, UserRoleEnum.BLACK, pageable);
         } else {
             // 닉네임이 제공되지 않은 경우 전체 사용자 목록 반환
-            blackUserList = userRepository.findAllByBlackUser(UserRoleEnum.BLACK);
+            Pageable pageable = PageRequest.of(page, size);
+            blackUserPage = userRepository.findAllByBlackUser(UserRoleEnum.BLACK, pageable);
         }
-        List<UserResponseDto> userResponseDtoList = blackUserList.stream().map(UserResponseDto::new).toList();
 
-        return ApiResponse.success(userResponseDtoList);
+        Page<UserResponseDto> userResponseDtoPage = blackUserPage.map(UserResponseDto::new);
+
+        return ApiResponse.success(userResponseDtoPage);
     }
+
     @Transactional
     public ApiResponse<?> makeUserAdmin(User user, Long userId) {
         if (user.getRole() != UserRoleEnum.SUPER) {

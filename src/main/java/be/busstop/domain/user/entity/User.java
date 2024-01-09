@@ -62,7 +62,7 @@ public class User extends Timestamped {
     private String sessionId;
 
     @Builder
-    public User(String nickname, String userCode, String age, String gender, String password, String profileImageUrl, UserRoleEnum role, Category interest) {
+    public User(String nickname, String userCode, String age, String gender, String password, String profileImageUrl,Double mannerTemplate, UserRoleEnum role, Category interest, Integer reportCount) {
         this.userCode = userCode;
         this.nickname = nickname;
         this.age = age;
@@ -71,8 +71,9 @@ public class User extends Timestamped {
         this.profileImageUrl = profileImageUrl;
         this.role = role;
         this.interest = interest;
-        this.mannerTemplate = 36.5;
+        this.mannerTemplate = mannerTemplate;
         this.lastAccessed = LocalDateTime.now();
+        this.reportCount = reportCount;
     }
 
     @Builder
@@ -81,6 +82,8 @@ public class User extends Timestamped {
         this.password = password;
         this.profileImageUrl = profileImageUrl;
         this.role = UserRoleEnum.USER;
+        this.mannerTemplate = 36.5;
+        this.reportCount = 0;
     }
     public void updateNickname(String nickname, Category interest) {
         this.nickname = nickname;
