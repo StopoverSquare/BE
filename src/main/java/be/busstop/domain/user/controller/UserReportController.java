@@ -49,14 +49,18 @@ public class UserReportController {
     @Operation(summary = "전체유저 조회")
     @GetMapping("/userList")
     public ApiResponse<?> userList(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                   @RequestParam(required = false) String nickname) {
-            return adminPageService.userList(userDetails.getUser(),nickname);
+                                   @RequestParam(required = false) String nickname,
+                                   @RequestParam(defaultValue = "0") int page,
+                                   @RequestParam(defaultValue = "10") int size) {
+            return adminPageService.userList(userDetails.getUser(),nickname,page,size);
     }
     @Operation(summary = "BLACK 유저 조회")
     @GetMapping("/blackUser")
     public ApiResponse<?> blackUserList(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                        @RequestParam(required = false) String nickname) {
-            return adminPageService.userBlackList(userDetails.getUser(),nickname);
+                                        @RequestParam(required = false) String nickname,
+                                        @RequestParam(defaultValue = "0") int page,
+                                        @RequestParam(defaultValue = "10") int size) {
+            return adminPageService.userBlackList(userDetails.getUser(),nickname,page,size);
     }
     @Operation(summary = "신고된 유저들 조회")
     @GetMapping("/reportList")

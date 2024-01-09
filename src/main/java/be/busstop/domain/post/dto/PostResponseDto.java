@@ -37,7 +37,6 @@ public class PostResponseDto {
     private Boolean isParticipants;
     private int views;
     private String location;
-    private String locationDetail;
     private String profileImageUrl;
     private String chatroomId;
     private List<Map<String, String>> chatParticipants;
@@ -81,7 +80,6 @@ public class PostResponseDto {
                 .map(String::new)
                 .collect(Collectors.toList());
         this.location = post.getLocation();
-        this.locationDetail = post.getLocationDetail();
         this.profileImageUrl = post.getUser().getProfileImageUrl();
         this.isComplete = isComplete;
         if (post.getStatus() != null) {
@@ -116,7 +114,7 @@ public class PostResponseDto {
     // 마이페이지
     public PostResponseDto(Long id, Long userId, Category category,String status, String title,
                            String nickname, String age, String gender,
-                       String location,String locationDetail, String thumbnailImageUrl, String profileImageUrl,int views, LocalDateTime createdAt) {
+                       String location,String endDate, String thumbnailImageUrl, String profileImageUrl,int views, LocalDateTime createdAt) {
         this.id = id;
         this.userId = userId;
         this.category = category;
@@ -126,7 +124,7 @@ public class PostResponseDto {
         this.age = age;
         this.gender = gender;
         this.location = location;
-        this.locationDetail = locationDetail;
+        this.endDate = endDate;
         this.thumbnailImageUrl = thumbnailImageUrl;
         this.profileImageUrl = profileImageUrl;
         this.views = views;

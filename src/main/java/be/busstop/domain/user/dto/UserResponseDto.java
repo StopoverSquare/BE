@@ -16,6 +16,7 @@ public class UserResponseDto {
     private String gender;
     private String profileImageUrl;
     private Double mannerTemplate;
+    private Integer reportCount;
     private LocalDateTime createdAt;
     private LocalDateTime lastAccessed;
     private UserRoleEnum role;
@@ -27,6 +28,7 @@ public class UserResponseDto {
         this.gender = user.getGender();
         this.profileImageUrl = user.getProfileImageUrl();
         this.mannerTemplate = user.getMannerTemplate();
+        this.reportCount = user.getReportCount();
         this.createdAt = user.getCreatedAt();
         this.lastAccessed = user.getLastAccessed();
         this.role = user.getRole();

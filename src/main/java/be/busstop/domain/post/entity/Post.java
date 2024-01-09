@@ -1,6 +1,5 @@
 package be.busstop.domain.post.entity;
 
-import be.busstop.domain.post.dto.BlockedPostDto;
 import be.busstop.domain.post.dto.PostRequestDto;
 import be.busstop.domain.poststatus.entity.Status;
 import be.busstop.domain.user.entity.User;
@@ -12,12 +11,10 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.springframework.security.core.parameters.P;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
 
@@ -66,9 +63,6 @@ public class Post extends Timestamped {
     private String location;
 
     @Column
-    private String locationDetail;
-
-    @Column
     private String endDate;
 
     @Column
@@ -101,7 +95,6 @@ public class Post extends Timestamped {
         this.title = postRequestDto.getTitle();
         this.content = postRequestDto.getContent();
         this.location = postRequestDto.getLocation();
-        this.locationDetail = postRequestDto.getLocationDetail();
         this.endDate = postRequestDto.getEndDate();
         this.endTime = postRequestDto.getEndTime();
         this.nickname = this.user.getNickname();
