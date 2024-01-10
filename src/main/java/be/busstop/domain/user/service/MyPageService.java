@@ -77,7 +77,8 @@ public class MyPageService {
         if (nicknameRequestDto.getNickname() != null) {
             existingUser.updateNickname(nicknameRequestDto.getNickname(), Category.valueOf(nicknameRequestDto.getInterest()));
         }
-
+        userRepository.save(existingUser);
+        kakaoService.addToken(existingUser, response);
         return ResponseUtils.okWithMessage(SuccessCodeEnum.USER_USERDATA_UPDATA_SUCCESS);
     }
 
