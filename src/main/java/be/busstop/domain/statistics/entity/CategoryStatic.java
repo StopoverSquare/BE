@@ -39,11 +39,16 @@ public class CategoryStatic {
 
 
     public void plusCnt(String category){
-        switch (category) {
-            case "Eats" -> this.eatsCnt++;
-            case "Culture" -> this.cultureCnt++;
-            case "Exercise" -> this.exerciseCnt++;
-            case "Study" -> this.studyCnt++;
+        if (category == null) {
+            this.etcCnt++;
+            return;
+        }
+
+        switch (category.toLowerCase()) {
+            case "eats" -> this.eatsCnt++;
+            case "culture" -> this.cultureCnt++;
+            case "exercise" -> this.exerciseCnt++;
+            case "study" -> this.studyCnt++;
             default -> this.etcCnt++;
         }
     }

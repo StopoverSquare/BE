@@ -46,7 +46,18 @@ public class AgeStatic {
     private Long etcCnt = 0L;
 
     public void plusCnt(String age) {
-        int ageValue = Integer.parseInt(age);
+        if (age == null) {
+            this.etcCnt++;
+            return;
+        }
+
+        int ageValue;
+        try {
+            ageValue = Integer.parseInt(age);
+        } catch (NumberFormatException e) {
+            this.etcCnt++;
+            return;
+        }
 
         if (ageValue >= 10 && ageValue < 20) {
             this.tenCnt++;

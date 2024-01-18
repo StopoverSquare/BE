@@ -30,9 +30,14 @@ public class GenderStatic {
     private Long etcCnt = 0L;
 
     public void plusCnt(String gender) {
-        switch(gender){
-            case "Male" -> this.maleCnt++;
-            case "Female" -> this.femaleCnt++;
+        if (gender == null) {
+            this.etcCnt++;
+            return;
+        }
+
+        switch(gender.toLowerCase()){
+            case "male" -> this.maleCnt++;
+            case "female" -> this.femaleCnt++;
             default -> this.etcCnt++;
         }
     }
