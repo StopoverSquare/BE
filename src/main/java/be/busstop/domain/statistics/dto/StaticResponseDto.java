@@ -25,6 +25,7 @@ public class StaticResponseDto {
     private Long exerciseCnt;
     private Long studyCnt;
     private Long categoryEtcCnt;
+    private Long etcCnt;
 
     // 성별
     private Long maleCnt;
