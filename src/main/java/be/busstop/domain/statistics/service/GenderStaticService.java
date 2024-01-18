@@ -23,20 +23,19 @@ public class GenderStaticService {
     private final UserRepository userRepository;
     private final GenderStaticRepository genderStaticRepository;
 
-    @Scheduled(cron = "0 0 0 * * ?")
-    public void setGenderStatic(){
-        LocalDate date = LocalDate.now();
-        List<User> userList = userRepository.findAllByCreatedAt(date.atStartOfDay());
-        GenderStatic genderStatic = genderStaticRepository.findByDate(date).orElse(new GenderStatic());
+    public void setGenderStatic() {
+        LocalDate currentDate = LocalDate.now();
+        genderStaticRepository.deleteByDate(currentDate);
 
-        for(User user : userList){
+        List<User> userList = userRepository.findAll();
+        GenderStatic genderStatic = new GenderStatic();
+
+        for (User user : userList) {
             String gender = user.getGender();
             genderStatic.plusCnt(gender);
         }
         genderStaticRepository.save(genderStatic);
-
     }
-
     public GenderStaticResponseDto getAllGenderStatic(){
         List<GenderStatic> genderStatics = genderStaticRepository.findAll();
         Long maleCnt = 0L;

@@ -5,9 +5,7 @@ import be.busstop.domain.statistics.entity.AgeStatic;
 import be.busstop.domain.statistics.repository.AgeStaticRepository;
 import be.busstop.domain.user.entity.User;
 import be.busstop.domain.user.repository.UserRepository;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,13 +19,14 @@ public class AgeStaticService {
     private final UserRepository userRepository;
     private final AgeStaticRepository ageStaticRepository;
 
-    @Scheduled(cron = "0 0 0 * * ?")
-    public void setAgeStatic(){
-        LocalDate date = LocalDate.now();
-        List<User> userList = userRepository.findAllByCreatedAt(date.atStartOfDay());
-        AgeStatic ageStatic = ageStaticRepository.findByDate(date).orElse(new AgeStatic());
+    public void setAgeStatic() {
+        LocalDate currentDate = LocalDate.now();
+        ageStaticRepository.deleteByDate(currentDate);
 
-        for(User user : userList){
+        List<User> userList = userRepository.findAll();
+        AgeStatic ageStatic = new AgeStatic();
+
+        for (User user : userList) {
             String age = user.getAge();
             ageStatic.plusCnt(age);
         }

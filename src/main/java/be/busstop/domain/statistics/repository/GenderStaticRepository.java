@@ -8,5 +8,5 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 public interface GenderStaticRepository extends JpaRepository<GenderStatic, Long> {
-    Optional<GenderStatic> findByDate(LocalDate date);
+    void deleteByDate(LocalDate date);
 }

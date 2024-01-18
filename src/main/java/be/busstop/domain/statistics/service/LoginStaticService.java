@@ -6,12 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -19,7 +16,8 @@ import java.util.List;
 @Transactional
 public class LoginStaticService {
     private final LoginStaticRepository loginStaticRepository;
-    public void updateLoginStatic(){
+
+    public void updateLoginStatic() {
         LocalDate date = LocalDate.now();
         LoginStatic loginStatic = loginStaticRepository.findByDate(date).orElse(new LoginStatic());
 
@@ -27,20 +25,43 @@ public class LoginStaticService {
         loginStaticRepository.save(loginStatic);
     }
 
-    public Long getTodayCnt(){
-        LocalDate date = LocalDate.now();
-        LoginStatic loginStatic = loginStaticRepository.findByDate(date).orElse(new LoginStatic());
-        return loginStatic.getLoginCnt();
+
+    public List<Long> getTodayCntArray() {
+        LocalDate currentDate = LocalDate.now();
+        int daysInMonth = currentDate.lengthOfMonth();
+        List<Long> todayCntArray = new ArrayList<>();
+
+        for (int i = 0; i < daysInMonth; i++) {
+            LocalDate loopDate = currentDate.withDayOfMonth(i + 1);
+            LoginStatic loginStatic = loginStaticRepository.findByDate(loopDate).orElse(new LoginStatic());
+            todayCntArray.add(loginStatic.getLoginCnt());
+        }
+
+        return todayCntArray;
     }
 
-    public Long getWeekCnt(){
+    public Long getWeekCnt() {
         LocalDate date = LocalDate.now();
         List<LoginStatic> loginStatics = loginStaticRepository.findAllByDateBetween(date.minusDays(7), date);
         long weekCnt = 0L;
-        for(LoginStatic loginStatic : loginStatics){
+        for (LoginStatic loginStatic : loginStatics) {
             weekCnt += loginStatic.getLoginCnt();
         }
         return weekCnt;
     }
 
+    public Long getAllDayCnt() {
+        List<LoginStatic> loginStatics = loginStaticRepository.findAll();
+        long allDayCnt = 0L;
+        for (LoginStatic loginStatic : loginStatics) {
+            allDayCnt += loginStatic.getLoginCnt();
+        }
+        return allDayCnt;
+    }
+
+
+    public void resetMonthlyLoginCntArray(LocalDate currentDate) {
+        // 매월 1일 자정에 호출되어야 하는 로직을 추가
+        loginStaticRepository.deleteByDate(currentDate.minusMonths(1));
+    }
 }

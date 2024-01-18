@@ -7,5 +7,5 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 public interface AgeStaticRepository extends JpaRepository<AgeStatic, Long> {
-    Optional<AgeStatic> findByDate(LocalDate date);
+    void deleteByDate(LocalDate date);
 }

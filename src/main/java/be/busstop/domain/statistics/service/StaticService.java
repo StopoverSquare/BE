@@ -6,7 +6,11 @@ import be.busstop.domain.statistics.dto.GenderStaticResponseDto;
 import be.busstop.domain.statistics.dto.StaticResponseDto;
 import be.busstop.global.responseDto.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -15,9 +19,25 @@ public class StaticService {
     private final CategoryStaticService categoryStaticService;
     private final GenderStaticService genderStaticService;
     private final LoginStaticService loginStaticService;
+
+    public void updateStatistics() {
+        ageStaticService.setAgeStatic();
+        categoryStaticService.setCategoryStatic();
+        genderStaticService.setGenderStatic();
+        loginStaticService.updateLoginStatic();
+    }
+
+    @Scheduled(cron = "0 0 0 * * ?") // 매일 자정에 실행
+    public void resetMonthlyLoginCntArray() {
+        LocalDate currentDate = LocalDate.now();
+        loginStaticService.resetMonthlyLoginCntArray(currentDate);
+    }
+
     public ApiResponse<?> getAllStatic() {
-        Long todayCnt = loginStaticService.getTodayCnt();
+        updateStatistics();
+        List<Long> todayCnt = loginStaticService.getTodayCntArray();
         Long weekCnt = loginStaticService.getWeekCnt();
+        Long allDayCnt = loginStaticService.getAllDayCnt();
 
         AgeStaticResponseDto ageStaticResponseDto = ageStaticService.getAllAgeStatic();
         CategoryStaticResponseDto categoryStaticResponseDto = categoryStaticService.getAllCategoryStatic();
@@ -41,7 +61,9 @@ public class StaticService {
                 .genderEtcCnt(genderStaticResponseDto.getGenderEtcCnt())
                 .todayCnt(todayCnt)
                 .weekCnt(weekCnt)
+                .allDayCnt(allDayCnt)
                 .build();
+
         return ApiResponse.success(staticResponseDto);
     }
 }
