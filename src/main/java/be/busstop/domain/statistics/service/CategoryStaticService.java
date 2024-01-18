@@ -20,19 +20,19 @@ public class CategoryStaticService {
     private final UserRepository userRepository;
     private final CategoryStaticRepository categoryStaticRepository;
 
-    @Scheduled(cron = "0 0 0 * * ?")
-    public void setCategoryStatic(){
-        LocalDate date = LocalDate.now();
-        List<User> userList = userRepository.findAllByCreatedAt(date.atStartOfDay());
-        CategoryStatic categoryStatic = categoryStaticRepository.findByDate(date).orElse(new CategoryStatic());
+    public void setCategoryStatic() {
+        LocalDate currentDate = LocalDate.now();
+        categoryStaticRepository.deleteByDate(currentDate);
 
-        for(User user : userList){
+        List<User> userList = userRepository.findAll();
+        CategoryStatic categoryStatic = new CategoryStatic();
+
+        for (User user : userList) {
             String interest = String.valueOf(user.getInterest());
             categoryStatic.plusCnt(interest);
         }
         categoryStaticRepository.save(categoryStatic);
     }
-
     public CategoryStaticResponseDto getAllCategoryStatic(){
         List<CategoryStatic> categoryStatics = categoryStaticRepository.findAll();
         Long eatsCnt = 0L;

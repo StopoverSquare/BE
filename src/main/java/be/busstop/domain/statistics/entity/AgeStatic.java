@@ -46,15 +46,22 @@ public class AgeStatic {
     private Long etcCnt = 0L;
 
     public void plusCnt(String age) {
-        int ages = Integer.parseInt(age)/10;
-        switch (ages) {
-            case 10 -> this.tenCnt++;
-            case 20 -> this.twentyCnt++;
-            case 30 -> this.thirtyCnt++;
-            case 40 -> this.fortyCnt++;
-            case 50 -> this.fiftyCnt++;
-            case 60 -> this.sixtyCnt++;
-            default -> this.etcCnt++;
+        int ageValue = Integer.parseInt(age);
+
+        if (ageValue >= 10 && ageValue < 20) {
+            this.tenCnt++;
+        } else if (ageValue >= 20 && ageValue < 30) {
+            this.twentyCnt++;
+        } else if (ageValue >= 30 && ageValue < 40) {
+            this.thirtyCnt++;
+        } else if (ageValue >= 40 && ageValue < 50) {
+            this.fortyCnt++;
+        } else if (ageValue >= 50 && ageValue < 60) {
+            this.fiftyCnt++;
+        } else if (ageValue >= 60) {
+            this.sixtyCnt++;
+        } else {
+            this.etcCnt++;
         }
     }
 }
