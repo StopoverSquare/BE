@@ -46,6 +46,13 @@ public class UserReportController {
                                        ,@PathVariable Long userId) {
         return adminPageService.makeUserBlack(userDetails.getUser(), userId);
     }
+    @Operation(summary = "블랙유저 -> 일반유저 전환")
+    @Transactional
+    @PostMapping("/user/{userId}")
+    public ApiResponse<?> makeUser(@AuthenticationPrincipal UserDetailsImpl userDetails
+            ,@PathVariable Long userId) {
+        return adminPageService.makeUser(userDetails.getUser(), userId);
+    }
     @Operation(summary = "전체유저 조회")
     @GetMapping("/userList")
     public ApiResponse<?> userList(@AuthenticationPrincipal UserDetailsImpl userDetails,
