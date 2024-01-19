@@ -17,9 +17,8 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByNickname(String nickname);
-
     Optional<User> findByUserCode(String userCode);
-    Page<User> findByNicknameContainingIgnoreCase(String nickname, Pageable pageable);
+
     Page<User> findByNicknameContainingIgnoreCaseAndRole(String nickname, UserRoleEnum role, Pageable pageable);
 
 
@@ -30,9 +29,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Page<User> findAllByBlackUser(@Param("role") UserRoleEnum BLACK, Pageable pageable);
 
     @Query("SELECT u FROM User u WHERE u.role = :role")
-    List<User> findAllByUser(@Param("role") UserRoleEnum USER);
+    Page<User> findAllByUser(@Param("role") UserRoleEnum USER,Pageable pageable);
 
     boolean existsByNickname(String nickname);
 
-    List<User> findAllByCreatedAt(LocalDateTime createdAt);
 }

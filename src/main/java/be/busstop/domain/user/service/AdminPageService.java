@@ -42,11 +42,11 @@ public class AdminPageService {
         if (StringUtils.hasText(nickname)) {
             // 닉네임이 제공된 경우 해당 닉네임으로 사용자를 검색
             Pageable pageable = PageRequest.of(page, size);
-            userPage = userRepository.findByNicknameContainingIgnoreCase(nickname, pageable);
+            userPage = userRepository.findByNicknameContainingIgnoreCaseAndRole(nickname, UserRoleEnum.USER, pageable);
         } else {
             // 닉네임이 제공되지 않은 경우 전체 사용자 목록 반환
             Pageable pageable = PageRequest.of(page, size);
-            userPage = userRepository.findAll(pageable);
+            userPage = userRepository.findAllByUser(UserRoleEnum.USER, pageable);
         }
 
         Page<UserResponseDto> userResponseDtoPage = userPage.map(UserResponseDto::new);
@@ -96,6 +96,14 @@ public class AdminPageService {
         black.setRoleBlack();
         userRepository.save(black);
         return ApiResponse.success(black.getNickname() + " 유저의 권한을 제한 하였습니다.");
+    }
+    @Transactional
+    public ApiResponse<?> makeUser(User user, Long userId) {
+        validateAdminRole(user);
+        User user1 = findUserById(userId);
+        user1.setRoleUser();
+        userRepository.save(user1);
+        return ApiResponse.success(user1.getNickname() + " 유저의 제한을 해제하였습니다.");
     }
     @Transactional(readOnly = true)
     public List<UserReportResponseDto> searchAllUserReports(User user, String nickname) {
