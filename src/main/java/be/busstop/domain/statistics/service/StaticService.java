@@ -8,6 +8,8 @@ import be.busstop.global.responseDto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class StaticService {
@@ -16,8 +18,9 @@ public class StaticService {
     private final GenderStaticService genderStaticService;
     private final LoginStaticService loginStaticService;
     public ApiResponse<?> getAllStatic() {
-        Long todayCnt = loginStaticService.getTodayCnt();
+        List<Long> monthCnt = loginStaticService.getMonthCnt();
         Long weekCnt = loginStaticService.getWeekCnt();
+        Long allCnt = loginStaticService.getAllCnt();
 
         AgeStaticResponseDto ageStaticResponseDto = ageStaticService.getAllAgeStatic();
         CategoryStaticResponseDto categoryStaticResponseDto = categoryStaticService.getAllCategoryStatic();
@@ -39,8 +42,9 @@ public class StaticService {
                 .maleCnt(genderStaticResponseDto.getMaleCnt())
                 .femaleCnt(genderStaticResponseDto.getFemaleCnt())
                 .genderEtcCnt(genderStaticResponseDto.getGenderEtcCnt())
-                .todayCnt(todayCnt)
+                .monthCnt(monthCnt)
                 .weekCnt(weekCnt)
+                .allCnt(allCnt)
                 .build();
         return ApiResponse.success(staticResponseDto);
     }

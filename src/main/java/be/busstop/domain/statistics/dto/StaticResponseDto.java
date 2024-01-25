@@ -4,6 +4,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Builder
@@ -30,6 +32,7 @@ public class StaticResponseDto {
     private Long genderEtcCnt;
 
     // 방문자수
-    private Long todayCnt;
+    private List<Long> monthCnt;
     private Long weekCnt;
+    private Long allCnt;
 }
