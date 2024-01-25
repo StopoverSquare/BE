@@ -26,8 +26,7 @@ import java.util.List;
 import static be.busstop.global.stringCode.ErrorCodeEnum.POST_NOT_EXIST;
 import static be.busstop.global.stringCode.ErrorCodeEnum.USER_NOT_EXIST;
 import static be.busstop.global.stringCode.SuccessCodeEnum.*;
-import static be.busstop.global.utils.ResponseUtils.ok;
-import static be.busstop.global.utils.ResponseUtils.okWithMessage;
+import static be.busstop.global.utils.ResponseUtils.*;
 
 @Slf4j
 @Service
@@ -56,13 +55,21 @@ public class SalvService {
 
     @Transactional
     public ApiResponse<?> createSalvation(SalvRequestDto salvRequestDto, List<MultipartFile> images) {
+        if (salvRepository.existsByTitle(salvRequestDto.getTitle())) {
+
+            return error("이미 구제신청을 하였습니다.",400);
+        }
+
+        // 새로운 Salvation 생성
         List<String> imageUrlList = s3.uploads(images);
         salvRequestDto.setImageUrlList(imageUrlList);
         User user = userRepository.findByNickname(salvRequestDto.getTitle())
                 .orElseThrow(() -> new InvalidConditionException(USER_NOT_EXIST));
-        salvRepository.save(new Salvation(salvRequestDto, user.getId(),imageUrlList));
-        return ResponseUtils.okWithMessage(POST_SALVATION_SUCCESS);
+        salvRepository.save(new Salvation(salvRequestDto, user.getId(), imageUrlList));
+
+        return okWithMessage(POST_SALVATION_SUCCESS);
     }
+
 
     @Transactional
     public ApiResponse<?> salvationOk(Long salvId, User user) {
@@ -107,7 +114,7 @@ public class SalvService {
     }
 
     private void validateAdminRole(User user) {
-        if (user.getRole() != UserRoleEnum.ADMIN) {
+        if (user.getRole() != UserRoleEnum.ADMIN && user.getRole() != UserRoleEnum.SUPER) {
             throw new IllegalArgumentException("권한이 없습니다.");
         }
     }

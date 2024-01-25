@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -27,24 +28,45 @@ public class AdminPageService {
     private final UserRepository userRepository;
     private final UserReportRepository userReportRepository;
     @Transactional(readOnly = true)
-    public ApiResponse<?> userList(User user) {
+    public ApiResponse<?> userList(User user, @RequestParam(required = false) String nickname) {
         validateAdminRole(user);
-        List<User> userList = userRepository.findAllByUser(UserRoleEnum.USER);
+
+        List<User> userList;
+
+        if (StringUtils.hasText(nickname)) {
+            // 닉네임이 제공된 경우 해당 닉네임으로 사용자를 검색
+            userList = userRepository.findByNicknameContainingIgnoreCase(nickname);
+        } else {
+            // 닉네임이 제공되지 않은 경우 전체 사용자 목록 반환
+            userList = userRepository.findAll();
+        }
+
         List<UserResponseDto> userResponseDtoList = userList.stream().map(UserResponseDto::new).toList();
 
         return ApiResponse.success(userResponseDtoList);
     }
     @Transactional(readOnly = true)
-    public ApiResponse<?> userBlackList(User user) {
+    public ApiResponse<?> userBlackList(User user, @RequestParam(required = false) String nickname) {
         validateAdminRole(user);
-        List<User> blackUserList = userRepository.findAllByBlackUser(UserRoleEnum.BLACK);
+
+        List<User> blackUserList;
+
+        if (StringUtils.hasText(nickname)) {
+            // 닉네임이 제공된 경우 해당 닉네임으로 사용자를 검색
+            blackUserList = userRepository.findByNicknameContainingIgnoreCaseAndRole(nickname,UserRoleEnum.BLACK);
+        } else {
+            // 닉네임이 제공되지 않은 경우 전체 사용자 목록 반환
+            blackUserList = userRepository.findAllByBlackUser(UserRoleEnum.BLACK);
+        }
         List<UserResponseDto> userResponseDtoList = blackUserList.stream().map(UserResponseDto::new).toList();
 
         return ApiResponse.success(userResponseDtoList);
     }
     @Transactional
     public ApiResponse<?> makeUserAdmin(User user, Long userId) {
-        validateAdminRole(user);
+        if (user.getRole() != UserRoleEnum.SUPER) {
+            throw new IllegalArgumentException("권한이 없습니다.");
+        }
         User admin = findUserById(userId);
         admin.setRoleAdmin();
         userRepository.save(admin);
@@ -92,6 +114,7 @@ public class AdminPageService {
                         new UserReportResponseDto(
                                 reportedUser.getId(),
                                 report.getReport(),
+                                report.getReportDetail(),
                                 report.getImageUrlList(),
                                 report.getCreatedAt()
                         )

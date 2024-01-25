@@ -18,14 +18,16 @@ public class MypageResponseDto {
     private String gender;
     private String profileImageUrl;
     private List<PostResponseDto> userPosts;
+    private Double mannerTemplate;
 
 
-    public MypageResponseDto(Long userId, String nickname, String age, String gender, String profileImageUrl, List<Post> userPosts) {
+    public MypageResponseDto(Long userId, String nickname, String age, String gender, String profileImageUrl, Double mannerTemplate, List<Post> userPosts) {
         this.userId = userId;
         this.nickname = nickname;
         this.age = age;
         this.gender = gender;
         this.profileImageUrl = profileImageUrl;
+        this.mannerTemplate = mannerTemplate;
         // 사용자의 게시물 리스트를 PostResponseDto 리스트로 변환하여 설정합니다.
         this.userPosts = userPosts.stream()
                 .map(post -> new PostResponseDto(

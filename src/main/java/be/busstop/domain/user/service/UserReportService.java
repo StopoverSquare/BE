@@ -35,7 +35,7 @@ public class UserReportService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저는 존재하지 않습니다."));
 
         List<String> imageUrlList = s3Service.uploads(images);
-        UserReport userReport = new UserReport(reporter, reportedUserId, imageUrlList, userReportDto.getReport());
+        UserReport userReport = new UserReport(reporter, reportedUserId, imageUrlList, userReportDto.getReport(),userReportDto.getReportDetail());
         reportedUser.increaseReportCount();
         userReportRepository.save(userReport);
         log.info("User {} reported user {}.", reporter.getId(), reportedUserId);

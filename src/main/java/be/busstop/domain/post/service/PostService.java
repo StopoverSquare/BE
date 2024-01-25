@@ -6,11 +6,14 @@ import be.busstop.domain.chat.repository.ChatRoomRepository;
 import be.busstop.domain.chat.service.ChatService;
 import be.busstop.domain.notification.service.NotificationService;
 import be.busstop.domain.notification.util.AlarmType;
+import be.busstop.domain.post.dto.BlockedPostDto;
 import be.busstop.domain.post.dto.PostRequestDto;
 import be.busstop.domain.post.dto.PostResponseDto;
 import be.busstop.domain.post.dto.PostSearchCondition;
+import be.busstop.domain.post.entity.BlockedPost;
 import be.busstop.domain.post.entity.Post;
 import be.busstop.domain.post.entity.PostApplicant;
+import be.busstop.domain.post.repository.BlockedPostRepository;
 import be.busstop.domain.post.repository.PostRepository;
 import be.busstop.domain.poststatus.entity.Status;
 import be.busstop.domain.poststatus.repository.PostStatusRepository;
@@ -19,12 +22,9 @@ import be.busstop.domain.user.entity.UserRoleEnum;
 import be.busstop.domain.user.repository.UserRepository;
 import be.busstop.global.exception.InvalidConditionException;
 import be.busstop.global.responseDto.ApiResponse;
-import be.busstop.global.responseDto.ErrorResponse;
 import be.busstop.global.security.jwt.JwtUtil;
-import be.busstop.global.stringCode.ErrorCodeEnum;
 import be.busstop.global.utils.ResponseUtils;
 import be.busstop.global.utils.S3;
-import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,8 +43,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static be.busstop.global.stringCode.ErrorCodeEnum.*;
-import static be.busstop.global.stringCode.SuccessCodeEnum.POST_CREATE_SUCCESS;
-import static be.busstop.global.stringCode.SuccessCodeEnum.POST_DELETE_SUCCESS;
+import static be.busstop.global.stringCode.SuccessCodeEnum.*;
 import static be.busstop.global.utils.ResponseUtils.ok;
 import static be.busstop.global.utils.ResponseUtils.okWithMessage;
 
@@ -56,6 +55,7 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final PostStatusRepository postStatusRepository;
+    private final BlockedPostRepository blockedPostRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final NotificationService notificationService;
     private final UserRepository userRepository;
@@ -76,14 +76,19 @@ public class PostService {
         boolean isAlreadyApplicant = false;
         boolean isParticipants = false;
 
-        Post post = postRepository.findDetailPostWithParticipants(postId)
+        Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new InvalidConditionException(POST_NOT_EXIST));
 
         if (token != null) {
             subStringToken = jwtUtil.substringHeaderToken(token);
             String userNickname = jwtUtil.getNickNameFromToken(subStringToken);
             User user = userRepository.findByNickname(userNickname)
-                    .orElseThrow(() -> new IllegalArgumentException("?"));
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+
+            // 어드민이나 슈퍼 유저가 아닌 경우에만 차단된 게시글인지 확인
+            if (post.getStatus() == Status.BLOCKED && user.getRole() != UserRoleEnum.ADMIN && user.getRole() != UserRoleEnum.SUPER) {
+                return ResponseUtils.customError(POST_BLOCKED);
+            }
 
             // 사용자가 이미 지원자인 경우 isAlreadyApplicant를 true로 설정
             if (post.getApplicants().stream()
@@ -98,7 +103,10 @@ public class PostService {
                 isComplete = true;
             }
         } else {
-
+            // 로그인하지 않은 사용자도 차단 여부 확인
+            if (post.getStatus() == Status.BLOCKED) {
+                return ResponseUtils.customError(POST_BLOCKED);
+            }
             isAlreadyApplicant = false;
             isParticipants = false;
         }
@@ -113,33 +121,6 @@ public class PostService {
         return ok(new PostResponseDto(post, isComplete, isAlreadyApplicant, isParticipants, chatParticipants, applicants));
     }
 
-
-    private List<String> getChatParticipantNicknames(String chatRoomId) {
-        ChatRoomEntity chatRoom = chatRoomRepository.findById(chatRoomId).orElse(null);
-        if (chatRoom != null) {
-            return chatRoom.getChatRoomParticipants().stream()
-                    .map(ChatRoomParticipant::getNickname)
-                    .collect(Collectors.toList());
-        }
-        return Collections.emptyList();
-    }
-
-    private List<Map<String, String>> getChatParticipants(String chatRoomId) {
-        ChatRoomEntity chatRoom = chatRoomRepository.findById(chatRoomId).orElse(null);
-        if (chatRoom != null) {
-            return chatRoom.getChatRoomParticipants().stream()
-                    .map(participant -> {
-                        Map<String, String> userInfo = new HashMap<>();
-                        userInfo.put("nickname", participant.getNickname());
-                        userInfo.put("age", String.valueOf(participant.getAge()));
-                        userInfo.put("gender", participant.getGender());
-                        userInfo.put("profileImageUrl", participant.getProfileImageUrl());
-                        return userInfo;
-                    })
-                    .collect(Collectors.toList());
-        }
-        return Collections.emptyList();
-    }
 
 
     @Transactional
@@ -180,15 +161,16 @@ public class PostService {
     }
 
     // 참여승인 메서드
+    @Transactional
     public ApiResponse<?> approveParticipant(User approver, Long postId, Long userId) {
         return approveOrDenyParticipant(approver, postId, userId, true);
     }
 
     // 참여거부 메서드
+    @Transactional
     public ApiResponse<?> denyParticipant(User denier, Long postId, Long userId) {
         return approveOrDenyParticipant(denier, postId, userId, false);
     }
-
 
     @Transactional
     public ApiResponse<?> addApplicant(User applicantUser, Long postId) {
@@ -224,15 +206,13 @@ public class PostService {
         return ApiResponse.success("채팅 참가신청 성공");
     }
 
-
+    @Transactional(readOnly = true)
     public List<PostApplicant> getApplicants(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 게시글 정보입니다."));
 
         return new ArrayList<>(post.getApplicants());
     }
-
-
     @Transactional
     public ApiResponse<?> createPost(PostRequestDto postRequestDto, List<MultipartFile> images, User user) {
         List<String> imageUrlList = s3.uploads(images);
@@ -252,12 +232,67 @@ public class PostService {
         return okWithMessage(POST_DELETE_SUCCESS);
     }
     @Transactional
+    public ApiResponse<?> blockPost(Long postId, User user, BlockedPostDto blockedPostDto) {
+        validateAdminRole(user);
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new InvalidConditionException(POST_NOT_EXIST));
+
+        // 게시글 상태를 BLOCKED로 변경
+        post.markBlocked();
+        postRepository.save(post);
+
+        // 차단된 게시글 정보를 BlockedPost 엔티티에 저장
+        BlockedPost blockedPost = new BlockedPost(blockedPostDto, post, user);
+        blockedPostRepository.save(blockedPost);
+
+        log.info("'{}'님이 게시물 ID '{}'를 차단했습니다. 사유: {}", user.getNickname(), postId, blockedPostDto.getContent());
+        return okWithMessage(POST_BLOCK_SUCCESS);
+    }
+    @Transactional
+    public ApiResponse<?> unblockPost(Long postId, User user) {
+        validateAdminRole(user);
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new InvalidConditionException(POST_NOT_EXIST));
+
+        post.markInProgress();
+        postRepository.save(post);
+
+        BlockedPost blockedPost = blockedPostRepository.findByPost(post)
+                .orElseThrow(() -> new InvalidConditionException(POST_NOT_BLOCK));
+
+        blockedPostRepository.delete(blockedPost);
+
+        log.info("'{}'님이 게시물 ID '{}'의 차단을 해제했습니다.", user.getNickname(), postId);
+        return okWithMessage(POST_UNBLOCK_SUCCESS);
+    }
+
+    @Transactional(readOnly = true)
     public ApiResponse<?> getRandomPosts(Pageable pageable) {
         List<Post> randomPosts = getRandomPostsFromDatabase(pageable);
 
         return ApiResponse.success(randomPosts.stream()
                 .map(this::mapToPostResponseDto)
                 .collect(Collectors.toList()));
+    }
+
+    @Transactional
+    @Async
+    @Scheduled(cron = "0 0 0 * * *")
+    public void checkEndTime() throws ParseException {
+        List<Post> posts = postRepository.findAll();
+        for(Post post : posts){
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy'y'MM'm'dd'd'");
+            Date postEndDate = dateFormat.parse(post.getEndDate());
+            if(postEndDate.before(DateTime.now().toDate())){
+                postRepository.updateByStatus(post.getId(), Status.COMPLETED);
+            }
+        }
+    }
+
+    private List<Post> getRandomPostsFromDatabase() {
+        List<Post> allPosts = postRepository.findAll();
+        Collections.shuffle(allPosts);
+        return allPosts;
     }
 
     private List<Post> getRandomPostsFromDatabase(Pageable pageable) {
@@ -278,12 +313,33 @@ public class PostService {
         return allPosts.subList(startIdx, endIdx);
     }
 
-    @Transactional(readOnly = true)
-    public List<Post> getRandomPostsFromDatabase() {
-        List<Post> allPosts = postRepository.findAll();
-        Collections.shuffle(allPosts);
-        return allPosts;
+    private List<String> getChatParticipantNicknames(String chatRoomId) {
+        ChatRoomEntity chatRoom = chatRoomRepository.findById(chatRoomId).orElse(null);
+        if (chatRoom != null) {
+            return chatRoom.getChatRoomParticipants().stream()
+                    .map(ChatRoomParticipant::getNickname)
+                    .collect(Collectors.toList());
+        }
+        return Collections.emptyList();
     }
+
+    private List<Map<String, String>> getChatParticipants(String chatRoomId) {
+        ChatRoomEntity chatRoom = chatRoomRepository.findById(chatRoomId).orElse(null);
+        if (chatRoom != null) {
+            return chatRoom.getChatRoomParticipants().stream()
+                    .map(participant -> {
+                        Map<String, String> userInfo = new HashMap<>();
+                        userInfo.put("nickname", participant.getNickname());
+                        userInfo.put("age", String.valueOf(participant.getAge()));
+                        userInfo.put("gender", participant.getGender());
+                        userInfo.put("profileImageUrl", participant.getProfileImageUrl());
+                        return userInfo;
+                    })
+                    .collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
+
 
     public PostResponseDto mapToPostResponseDto(Post post) {
         return new PostResponseDto(
@@ -328,17 +384,9 @@ public class PostService {
         return post;
     }
 
-    @Transactional
-    @Async
-    @Scheduled(cron = "0 0 0 * * *")
-    public void checkEndTime() throws ParseException {
-        List<Post> posts = postRepository.findAll();
-        for(Post post : posts){
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy'y'MM'm'dd'd'");
-            Date postEndDate = dateFormat.parse(post.getEndDate());
-            if(postEndDate.before(DateTime.now().toDate())){
-                postRepository.updateByStatus(post.getId(), Status.COMPLETED);
-            }
+    private void validateAdminRole(User user) {
+        if (user.getRole() != UserRoleEnum.ADMIN && user.getRole() != UserRoleEnum.SUPER) {
+            throw new IllegalArgumentException("권한이 없습니다.");
         }
     }
 }

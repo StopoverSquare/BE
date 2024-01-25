@@ -11,4 +11,5 @@ public interface UserReportRepository extends JpaRepository<UserReport,Long> {
     List<UserReport> findByReportedUserIdOrderByCreatedAtDesc(Long reportedUserId);
 
     List<UserReport> findAllByReportedUserId(Long reportedUserId);
+
 }

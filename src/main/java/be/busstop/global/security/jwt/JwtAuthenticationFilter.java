@@ -3,6 +3,7 @@ package be.busstop.global.security.jwt;
 import be.busstop.domain.post.entity.Category;
 import be.busstop.domain.statistics.service.LoginStaticService;
 import be.busstop.domain.user.dto.LoginRequestDto;
+import be.busstop.domain.user.entity.User;
 import be.busstop.domain.user.entity.UserRoleEnum;
 import be.busstop.domain.user.repository.UserRepository;
 import be.busstop.global.redis.RedisService;
@@ -134,21 +135,20 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         log.info("로그인 성공 및 JWT 생성");
         ObjectMapper objectMapper = new ObjectMapper();
+        User user = ((UserDetailsImpl) authResult.getPrincipal()).getUser();
 
         // 사용자 정보 가져오기
-        String userCode = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
-        String nickname = ((UserDetailsImpl) authResult.getPrincipal()).getNickname();
-        Long userId = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getId();
-        String age = (((UserDetailsImpl) authResult.getPrincipal()).getUser().getAge());
-        String gender = (((UserDetailsImpl) authResult.getPrincipal()).getUser().getGender());
-        UserRoleEnum role = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getRole();
-        String profileImageUrl = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getProfileImageUrl();
-        String interest = String.valueOf(((UserDetailsImpl) authResult.getPrincipal()).getUser().getInterest());
-
-        // 카카오 로그인의 경우 username에 카카오 이메일 정보가 담겨있을 것이므로 해당 값을 그대로 사용
+        String userCode = user.getUserCode();
+        String nickname = user.getNickname();
+        Long userId = user.getId();
+        String age = user.getAge();
+        String gender = user.getGender();
+        UserRoleEnum role = user.getRole();
+        String profileImageUrl = user.getProfileImageUrl();
+        String interest = String.valueOf(user.getInterest());
 
         String token = jwtUtil.createToken(String.valueOf(userId),userCode, nickname, age, gender, role, profileImageUrl, Category.valueOf(interest));
-        String refreshToken = jwtUtil.createRefreshToken(String.valueOf(userId),userCode, role, profileImageUrl);
+        String refreshToken = jwtUtil.createRefreshToken(String.valueOf(userId),userCode, nickname, age, gender, role,Category.valueOf(interest), profileImageUrl);
         jwtUtil.addJwtHeaders(token,refreshToken, response);
 
 
@@ -161,6 +161,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         loginStaticService.updateLoginStatic();
 
+        user.updateLastAccessed();
+        userRepository.save(user);
+
         ApiResponse<?> apiResponse = okWithMessage(SuccessCodeEnum.USER_LOGIN_SUCCESS);
 
         String jsonResponse = objectMapper.writeValueAsString(apiResponse);
@@ -168,6 +171,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(jsonResponse);
         response.setStatus(HttpServletResponse.SC_OK);
+
     }
 
 

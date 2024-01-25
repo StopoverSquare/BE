@@ -42,7 +42,6 @@ public class PostStatusService {
         String statusMessage = isComplete(post, user) ? Status.COMPLETED.getMessage() : Status.IN_PROGRESS.getMessage();
         return ApiResponse.success(statusMessage);
     }
-
     private Boolean isComplete(Post post, User user) {
         return postStatusRepository.findByPostAndUser(post, user).isPresent();
     }
