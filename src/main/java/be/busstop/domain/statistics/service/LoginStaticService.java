@@ -10,6 +10,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +40,25 @@ public class LoginStaticService {
         }
 
         return todayCntArray;
+    }
+
+    public Long getStaticsByDate(LocalDate localDate){
+        LoginStatic loginStatic = loginStaticRepository.findByDate(localDate).orElse(null);
+        Long dateCnt = 0L;
+        if(loginStatic != null){
+            dateCnt = loginStatic.getLoginCnt();
+        }
+        return dateCnt;
+    }
+
+    public List<Long> getMonthCnt(){
+        LocalDate endDate = LocalDate.now();
+        LocalDate startDate = endDate.minusDays(29);
+
+        return IntStream.range(0, 30)
+                .mapToObj(i -> startDate.plusDays(i))
+                .map(this::getStaticsByDate)
+                .collect(Collectors.toList());
     }
 
     public Long getWeekCnt() {

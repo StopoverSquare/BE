@@ -35,7 +35,7 @@ public class StaticService {
 
     public ApiResponse<?> getAllStatic() {
         updateStatistics();
-        List<Long> todayCnt = loginStaticService.getTodayCntArray();
+        List<Long> monthCnt = loginStaticService.getMonthCnt();
         Long weekCnt = loginStaticService.getWeekCnt();
         Long allDayCnt = loginStaticService.getAllDayCnt();
 
@@ -59,7 +59,7 @@ public class StaticService {
                 .maleCnt(genderStaticResponseDto.getMaleCnt())
                 .femaleCnt(genderStaticResponseDto.getFemaleCnt())
                 .genderEtcCnt(genderStaticResponseDto.getGenderEtcCnt())
-                .todayCnt(todayCnt)
+                .monthCnt(monthCnt)
                 .weekCnt(weekCnt)
                 .allDayCnt(allDayCnt)
                 .build();
