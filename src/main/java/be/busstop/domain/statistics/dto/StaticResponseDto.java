@@ -32,7 +32,7 @@ public class StaticResponseDto {
     private Long genderEtcCnt;
 
     // 방문자수
-    private List<Long> todayCnt;
+    private List<Long> monthCnt;
     private Long weekCnt;
     private Long allDayCnt;
 }
