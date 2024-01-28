@@ -22,7 +22,7 @@ public class AdminController {
         return adminPageService.searchNickname(nickname);
     }
 
-    @PostMapping("/admin")
+    @PostMapping("/admin/up")
     public ApiResponse<?> changeRoleToAdmin(@AuthenticationPrincipal UserDetailsImpl userDetailsImpl,@RequestBody NicknameRequestDto nickname){
         return adminPageService.changeRoleToAdmin(userDetailsImpl.getUser(), nickname);
     }
@@ -30,5 +30,10 @@ public class AdminController {
     @GetMapping("/admin")
     public ApiResponse<?> getAllAdmin(){
         return adminPageService.getAllAdmin();
+    }
+
+    @PostMapping("/admin/down")
+    public ApiResponse<?> changeRoleToUser(@AuthenticationPrincipal UserDetailsImpl userDetailsImpl,@RequestBody NicknameRequestDto nickname){
+        return adminPageService.changeRoleToUser(userDetailsImpl.getUser(), nickname);
     }
 }

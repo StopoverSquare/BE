@@ -207,7 +207,15 @@ public class AdminPageService {
         changeUser.setRoleAdmin();
         return ApiResponse.success("해당 사용자의 권한을 ADMIN으로 변경하였습니다.");
     }
+    public ApiResponse<?> changeRoleToUser(User user, NicknameRequestDto nickname) {
+        if(user.getRole() != UserRoleEnum.SUPER){
+            throw new InvalidConditionException(NOT_ACCESS);
+        }
 
+        User changeUser = userRepository.findByNickname(nickname.getNickname()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다.") );
+        changeUser.setRoleUser();
+        return ApiResponse.success("해당 사용자의 권한을 USER로 변경하였습니다.");
+    }
     public ApiResponse<?> getAllAdmin() {
         List<User> allUsers = userRepository.findAll();
         List<AdminResponseDto> adminUsers = new ArrayList<>();
@@ -232,4 +240,5 @@ public class AdminPageService {
         }
         return ApiResponse.success(adminUsers);
     }
+
 }
