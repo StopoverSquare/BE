@@ -26,4 +26,9 @@ public class AdminController {
     public ApiResponse<?> changeRoleToAdmin(@AuthenticationPrincipal UserDetailsImpl userDetailsImpl,@RequestBody NicknameRequestDto nickname){
         return adminPageService.changeRoleToAdmin(userDetailsImpl.getUser(), nickname);
     }
+
+    @GetMapping("/admin")
+    public ApiResponse<?> getAllAdmin(){
+        return adminPageService.getAllAdmin();
+    }
 }

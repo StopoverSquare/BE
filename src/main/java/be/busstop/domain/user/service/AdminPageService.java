@@ -1,9 +1,6 @@
 package be.busstop.domain.user.service;
 
-import be.busstop.domain.user.dto.NicknameRequestDto;
-import be.busstop.domain.user.dto.SearchResponseDto;
-import be.busstop.domain.user.dto.UserReportResponseDto;
-import be.busstop.domain.user.dto.UserResponseDto;
+import be.busstop.domain.user.dto.*;
 import be.busstop.domain.user.entity.User;
 import be.busstop.domain.user.entity.UserReport;
 import be.busstop.domain.user.entity.UserRoleEnum;
@@ -209,5 +206,30 @@ public class AdminPageService {
         User changeUser = userRepository.findByNickname(nickname.getNickname()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다.") );
         changeUser.setRoleAdmin();
         return ApiResponse.success("해당 사용자의 권한을 ADMIN으로 변경하였습니다.");
+    }
+
+    public ApiResponse<?> getAllAdmin() {
+        List<User> allUsers = userRepository.findAll();
+        List<AdminResponseDto> adminUsers = new ArrayList<>();
+        for(User user : allUsers){
+            if(user.getRole() == UserRoleEnum.SUPER){
+                adminUsers.add(AdminResponseDto.builder()
+                                .isSuper(true)
+                                .age(user.getAge())
+                                .gender(user.getGender())
+                                .profileImg(user.getProfileImageUrl())
+                                .nickname(user.getNickname())
+                                .build());
+            }else if(user.getRole() == UserRoleEnum.ADMIN){
+                adminUsers.add(AdminResponseDto.builder()
+                                .isSuper(false)
+                                .age(user.getAge())
+                                .gender(user.getGender())
+                                .profileImg(user.getProfileImageUrl())
+                                .nickname(user.getNickname())
+                                .build());
+            }
+        }
+        return ApiResponse.success(adminUsers);
     }
 }
