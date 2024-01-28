@@ -99,4 +99,16 @@ public class PostController {
                                        @PathVariable Long postId) {
         return postService.addApplicant(userDetailsImpl.getUser(), postId);
     }
+
+    @GetMapping("/block")
+    public ApiResponse<?> getBlockPosts(@AuthenticationPrincipal UserDetailsImpl userDetailsImpl){
+        return postService.getBlockPosts(userDetailsImpl.getUser());
+    }
+
+    @Operation(summary = "게시글 삭제")
+    @DeleteMapping("block/{postId}")
+    public ApiResponse<?> deleteBlockedPost(@PathVariable Long postId,
+                                     @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
+        return postService.deleteBlockedPost(postId, userDetailsImpl.getUser());
+    }
 }
