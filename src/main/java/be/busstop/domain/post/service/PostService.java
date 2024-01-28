@@ -6,10 +6,7 @@ import be.busstop.domain.chat.repository.ChatRoomRepository;
 import be.busstop.domain.chat.service.ChatService;
 import be.busstop.domain.notification.service.NotificationService;
 import be.busstop.domain.notification.util.AlarmType;
-import be.busstop.domain.post.dto.BlockedPostDto;
-import be.busstop.domain.post.dto.PostRequestDto;
-import be.busstop.domain.post.dto.PostResponseDto;
-import be.busstop.domain.post.dto.PostSearchCondition;
+import be.busstop.domain.post.dto.*;
 import be.busstop.domain.post.entity.BlockedPost;
 import be.busstop.domain.post.entity.Post;
 import be.busstop.domain.post.entity.PostApplicant;
@@ -23,7 +20,6 @@ import be.busstop.domain.user.repository.UserRepository;
 import be.busstop.global.exception.InvalidConditionException;
 import be.busstop.global.responseDto.ApiResponse;
 import be.busstop.global.security.jwt.JwtUtil;
-import be.busstop.global.stringCode.SuccessCodeEnum;
 import be.busstop.global.utils.ResponseUtils;
 import be.busstop.global.utils.S3;
 import jakarta.servlet.http.HttpServletRequest;
@@ -375,6 +371,11 @@ public class PostService {
                 new InvalidConditionException(POST_NOT_EXIST));
     }
 
+    private BlockedPost findBlockedPost(Long postId) {
+        return blockedPostRepository.findById(postId).orElseThrow(() ->
+                new InvalidConditionException(POST_NOT_EXIST));
+    }
+
     private Post confirmPost(Long postId, User user) throws InvalidConditionException {
         Post post = findPost(postId);
         log.info("Confirming post access: postId={}, user={}, postUser={}, userRole={}",
@@ -387,9 +388,38 @@ public class PostService {
         return post;
     }
 
+
     private void validateAdminRole(User user) {
         if (user.getRole() != UserRoleEnum.ADMIN && user.getRole() != UserRoleEnum.SUPER) {
             throw new IllegalArgumentException("권한이 없습니다.");
         }
+    }
+
+    public ApiResponse<?> getBlockPosts(User user) {
+        if (user.getRole() != UserRoleEnum.ADMIN && user.getRole() != UserRoleEnum.SUPER) {
+            throw new IllegalArgumentException("권한이 없습니다.");
+        }
+        List<BlockedPost> allBlockedPosts = blockedPostRepository.findAll();
+        List<BlockedPostResponseDto> blockedPostResponseDtos = new ArrayList<>();
+        for(BlockedPost post : allBlockedPosts){
+            blockedPostResponseDtos.add(BlockedPostResponseDto.builder()
+                            .authorGender(post.getPost().getGender())
+                            .postTitle(post.getPost().getTitle())
+                            .authorAge(post.getPost().getAge())
+                            .blockedDate(post.getCreatedAt().toLocalDate())
+                            .authorImg(post.getPost().getProfileImageUrl())
+                            .authorNickname(post.getPost().getNickname())
+                    .build());
+        }
+        return ApiResponse.success(blockedPostResponseDtos);
+    }
+
+    public ApiResponse<?> deleteBlockedPost(Long postId, User user) {
+        BlockedPost blockedPost = findBlockedPost(postId);
+        Post post = findPost(postId);
+        postRepository.delete(post);
+        blockedPostRepository.delete(blockedPost);
+        log.info("'{}'님이 게시물 ID '{}'를 삭제했습니다.", user.getNickname(), postId);
+        return okWithMessage(POST_DELETE_SUCCESS);
     }
 }
