@@ -37,11 +37,10 @@ public class Salvation extends Timestamped {
     @Column
     private List<String> imageUrlList = new ArrayList<>();
 
-    public Salvation(SalvRequestDto salvRequestDto, Long userId, List<String> imageUrlList ) {
+    public Salvation(SalvRequestDto salvRequestDto, Long userId) {
         this.title = salvRequestDto.getTitle();
         this.content = salvRequestDto.getContent();
         this.userId = userId;
-        this.imageUrlList = imageUrlList;
 
     }
 }

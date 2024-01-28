@@ -40,9 +40,8 @@ public class SalvController {
     }
     @Operation(summary = " 구제글 작성 -> 권한 필요 없음 ")
     @PostMapping
-    public ApiResponse<?> createSalvation(@Valid @RequestPart(value = "data") SalvRequestDto salvRequestDto,
-                                          @RequestPart(value = "file") List<MultipartFile> images) {
-        return salvService.createSalvation(salvRequestDto, images);
+    public ApiResponse<?> createSalvation(@Valid @RequestPart(value = "data") SalvRequestDto salvRequestDto) {
+        return salvService.createSalvation(salvRequestDto);
     }
     @Operation(summary = " 유저 구제 및 글 삭제 -> 관리자만 가능 ")
     @DeleteMapping("/{salvationId}")

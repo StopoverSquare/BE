@@ -1,7 +1,6 @@
 package be.busstop.domain.user.service;
 
-import be.busstop.domain.user.dto.UserReportResponseDto;
-import be.busstop.domain.user.dto.UserResponseDto;
+import be.busstop.domain.user.dto.*;
 import be.busstop.domain.user.entity.User;
 import be.busstop.domain.user.entity.UserReport;
 import be.busstop.domain.user.entity.UserRoleEnum;
@@ -11,6 +10,7 @@ import be.busstop.global.exception.InvalidConditionException;
 import be.busstop.global.responseDto.ApiResponse;
 import be.busstop.global.stringCode.ErrorCodeEnum;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,9 +22,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static be.busstop.global.stringCode.ErrorCodeEnum.NOT_ACCESS;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class AdminPageService {
 
 
@@ -179,4 +182,63 @@ public class AdminPageService {
                 reportedUser.getProfileImageUrl()
         );
     }
+
+    public ApiResponse<?> searchNickname(String nickname) {
+        List<User> allUsers = userRepository.findAll();
+        List<SearchResponseDto> searchUsers = new ArrayList<>();
+        for(User user : allUsers){
+            if(user.getNickname().contains(nickname)){
+                searchUsers.add(SearchResponseDto.builder()
+                                .age(user.getAge())
+                                .gender(user.getGender())
+                                .profileImg(user.getProfileImageUrl())
+                                .build());
+            }
+        }
+        return ApiResponse.success(searchUsers);
+    }
+
+    public ApiResponse<?> changeRoleToAdmin(User user, NicknameRequestDto nickname){
+        if(user.getRole() != UserRoleEnum.SUPER){
+            throw new InvalidConditionException(NOT_ACCESS);
+        }
+
+        User changeUser = userRepository.findByNickname(nickname.getNickname()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다.") );
+        changeUser.setRoleAdmin();
+        return ApiResponse.success("해당 사용자의 권한을 ADMIN으로 변경하였습니다.");
+    }
+    public ApiResponse<?> changeRoleToUser(User user, NicknameRequestDto nickname) {
+        if(user.getRole() != UserRoleEnum.SUPER){
+            throw new InvalidConditionException(NOT_ACCESS);
+        }
+
+        User changeUser = userRepository.findByNickname(nickname.getNickname()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다.") );
+        changeUser.setRoleUser();
+        return ApiResponse.success("해당 사용자의 권한을 USER로 변경하였습니다.");
+    }
+    public ApiResponse<?> getAllAdmin() {
+        List<User> allUsers = userRepository.findAll();
+        List<AdminResponseDto> adminUsers = new ArrayList<>();
+        for(User user : allUsers){
+            if(user.getRole() == UserRoleEnum.SUPER){
+                adminUsers.add(AdminResponseDto.builder()
+                                .isSuper(true)
+                                .age(user.getAge())
+                                .gender(user.getGender())
+                                .profileImg(user.getProfileImageUrl())
+                                .nickname(user.getNickname())
+                                .build());
+            }else if(user.getRole() == UserRoleEnum.ADMIN){
+                adminUsers.add(AdminResponseDto.builder()
+                                .isSuper(false)
+                                .age(user.getAge())
+                                .gender(user.getGender())
+                                .profileImg(user.getProfileImageUrl())
+                                .nickname(user.getNickname())
+                                .build());
+            }
+        }
+        return ApiResponse.success(adminUsers);
+    }
+
 }

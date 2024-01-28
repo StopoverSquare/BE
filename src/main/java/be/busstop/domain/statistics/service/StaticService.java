@@ -1,15 +1,15 @@
 package be.busstop.domain.statistics.service;
 
-import be.busstop.domain.statistics.dto.AgeStaticResponseDto;
-import be.busstop.domain.statistics.dto.CategoryStaticResponseDto;
-import be.busstop.domain.statistics.dto.GenderStaticResponseDto;
-import be.busstop.domain.statistics.dto.StaticResponseDto;
+import be.busstop.domain.post.entity.Post;
+import be.busstop.domain.post.repository.PostRepository;
+import be.busstop.domain.statistics.dto.*;
 import be.busstop.global.responseDto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -19,6 +19,7 @@ public class StaticService {
     private final CategoryStaticService categoryStaticService;
     private final GenderStaticService genderStaticService;
     private final LoginStaticService loginStaticService;
+    private final PostRepository postRepository;
 
     public void updateStatistics() {
         ageStaticService.setAgeStatic();
@@ -65,5 +66,24 @@ public class StaticService {
                 .build();
 
         return ApiResponse.success(staticResponseDto);
+    }
+
+    public ApiResponse<?> getAllLocation() {
+        List<Post> postList = postRepository.findAll();
+        List<LocationResponseDto> locationList = new ArrayList<>();
+
+        for(Post post : postList){
+            Long postId = post.getId();
+            String date = post.getEndDate();
+            String location = post.getLocation();
+
+            LocationResponseDto responseDto = LocationResponseDto.builder()
+                    .postId(postId)
+                    .date(date)
+                    .location(location)
+                    .build();
+            locationList.add(responseDto);
+        }
+        return ApiResponse.success(locationList);
     }
 }

@@ -54,18 +54,16 @@ public class SalvService {
     }
 
     @Transactional
-    public ApiResponse<?> createSalvation(SalvRequestDto salvRequestDto, List<MultipartFile> images) {
+    public ApiResponse<?> createSalvation(SalvRequestDto salvRequestDto) {
         if (salvRepository.existsByTitle(salvRequestDto.getTitle())) {
 
             return error("이미 구제신청을 하였습니다.",400);
         }
 
         // 새로운 Salvation 생성
-        List<String> imageUrlList = s3.uploads(images);
-        salvRequestDto.setImageUrlList(imageUrlList);
         User user = userRepository.findByNickname(salvRequestDto.getTitle())
                 .orElseThrow(() -> new InvalidConditionException(USER_NOT_EXIST));
-        salvRepository.save(new Salvation(salvRequestDto, user.getId(), imageUrlList));
+        salvRepository.save(new Salvation(salvRequestDto, user.getId()));
 
         return okWithMessage(POST_SALVATION_SUCCESS);
     }

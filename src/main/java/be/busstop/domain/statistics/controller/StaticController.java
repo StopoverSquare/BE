@@ -17,4 +17,9 @@ public class StaticController {
     public ApiResponse<?> getAllStatic(){
         return staticService.getAllStatic();
     }
+
+    @GetMapping("/static/location")
+    public ApiResponse<?> getAllLocation(){
+        return staticService.getAllLocation();
+    }
 }
