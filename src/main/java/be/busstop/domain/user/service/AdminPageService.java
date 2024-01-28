@@ -1,5 +1,6 @@
 package be.busstop.domain.user.service;
 
+import be.busstop.domain.user.dto.NicknameRequestDto;
 import be.busstop.domain.user.dto.SearchResponseDto;
 import be.busstop.domain.user.dto.UserReportResponseDto;
 import be.busstop.domain.user.dto.UserResponseDto;
@@ -12,6 +13,7 @@ import be.busstop.global.exception.InvalidConditionException;
 import be.busstop.global.responseDto.ApiResponse;
 import be.busstop.global.stringCode.ErrorCodeEnum;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,9 +25,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static be.busstop.global.stringCode.ErrorCodeEnum.NOT_ACCESS;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class AdminPageService {
 
 
@@ -194,5 +199,15 @@ public class AdminPageService {
             }
         }
         return ApiResponse.success(searchUsers);
+    }
+
+    public ApiResponse<?> changeRoleToAdmin(User user, NicknameRequestDto nickname){
+        if(user.getRole() != UserRoleEnum.SUPER){
+            throw new InvalidConditionException(NOT_ACCESS);
+        }
+
+        User changeUser = userRepository.findByNickname(nickname.getNickname()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다.") );
+        changeUser.setRoleAdmin();
+        return ApiResponse.success("해당 사용자의 권한을 ADMIN으로 변경하였습니다.");
     }
 }
