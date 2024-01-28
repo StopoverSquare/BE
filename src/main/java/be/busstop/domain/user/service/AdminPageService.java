@@ -179,4 +179,15 @@ public class AdminPageService {
                 reportedUser.getProfileImageUrl()
         );
     }
+
+    public ApiResponse<?> searchNickname(String nickname) {
+        List<User> allUsers = userRepository.findAll();
+        List<User> searchUsers = new ArrayList<>();
+        for(User user : allUsers){
+            if(user.getNickname().contains(nickname)){
+                searchUsers.add(user);
+            }
+        }
+        return ApiResponse.success(searchUsers);
+    }
 }
