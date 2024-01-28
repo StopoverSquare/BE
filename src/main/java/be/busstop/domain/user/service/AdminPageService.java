@@ -1,5 +1,6 @@
 package be.busstop.domain.user.service;
 
+import be.busstop.domain.user.dto.SearchResponseDto;
 import be.busstop.domain.user.dto.UserReportResponseDto;
 import be.busstop.domain.user.dto.UserResponseDto;
 import be.busstop.domain.user.entity.User;
@@ -182,10 +183,14 @@ public class AdminPageService {
 
     public ApiResponse<?> searchNickname(String nickname) {
         List<User> allUsers = userRepository.findAll();
-        List<User> searchUsers = new ArrayList<>();
+        List<SearchResponseDto> searchUsers = new ArrayList<>();
         for(User user : allUsers){
             if(user.getNickname().contains(nickname)){
-                searchUsers.add(user);
+                searchUsers.add(SearchResponseDto.builder()
+                                .age(user.getAge())
+                                .gender(user.getGender())
+                                .profileImg(user.getProfileImageUrl())
+                                .build());
             }
         }
         return ApiResponse.success(searchUsers);
