@@ -8,6 +8,7 @@ import java.time.LocalDate;
 @Getter
 @Builder
 public class BlockedPostResponseDto {
+    private Long postId;
     private String authorImg;
     private String authorNickname;
     private String authorAge;

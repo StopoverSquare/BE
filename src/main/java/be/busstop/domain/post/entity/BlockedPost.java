@@ -23,10 +23,9 @@ public class BlockedPost extends Timestamped {
     @JoinColumn(name = "admin_id")
     private User admin;
     private String content;
-    public BlockedPost(BlockedPostDto blockedPostDto, Post post, User admin) {
+    public BlockedPost( Post post, User admin) {
         this.post = post;
         this.admin = admin;
-        this.content = blockedPostDto.getContent();
     }
 }
 

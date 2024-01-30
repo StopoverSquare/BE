@@ -403,6 +403,7 @@ public class PostService {
         List<BlockedPostResponseDto> blockedPostResponseDtos = new ArrayList<>();
         for(BlockedPost post : allBlockedPosts){
             blockedPostResponseDtos.add(BlockedPostResponseDto.builder()
+                            .postId(post.getId())
                             .authorGender(post.getPost().getGender())
                             .postTitle(post.getPost().getTitle())
                             .authorAge(post.getPost().getAge())
