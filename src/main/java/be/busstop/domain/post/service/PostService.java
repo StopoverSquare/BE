@@ -231,7 +231,7 @@ public class PostService {
         return okWithMessage(POST_DELETE_SUCCESS);
     }
     @Transactional
-    public ApiResponse<?> blockPost(Long postId, User user, BlockedPostDto blockedPostDto) {
+    public ApiResponse<?> blockPost(Long postId, User user) {
         validateAdminRole(user);
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new InvalidConditionException(POST_NOT_EXIST));
@@ -241,10 +241,10 @@ public class PostService {
         postRepository.save(post);
 
         // 차단된 게시글 정보를 BlockedPost 엔티티에 저장
-        BlockedPost blockedPost = new BlockedPost(blockedPostDto, post, user);
+        BlockedPost blockedPost = new BlockedPost(post, user);
         blockedPostRepository.save(blockedPost);
 
-        log.info("'{}'님이 게시물 ID '{}'를 차단했습니다. 사유: {}", user.getNickname(), postId, blockedPostDto.getContent());
+        log.info("'{}'님이 게시물 ID '{}'를 차단했습니다.", user.getNickname(), postId);
         return okWithMessage(POST_BLOCK_SUCCESS);
     }
     @Transactional

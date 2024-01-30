@@ -41,6 +41,9 @@ public class PostResponseDto {
     private String chatroomId;
     private List<Map<String, String>> chatParticipants;
     private List<PostApplicant> applicants;
+    private float lng;
+    private float lat;
+    private String placeName;
 
     // 전체 조회
     @QueryProjection
@@ -60,6 +63,9 @@ public class PostResponseDto {
         this.endTime = post.getEndTime();
         this.location = post.getLocation();
         this.profileImageUrl = post.getUser().getProfileImageUrl();
+        this.lat = post.getLat();
+        this.lng = post.getLng();
+        this.placeName = post.getPlaceName();
     }
 
     // 상세 조회
@@ -90,6 +96,9 @@ public class PostResponseDto {
         this.chatroomId = post.getChatroomId();
         this.chatParticipants = chatParticipants;
         this.applicants = applicants;
+        this.lng = post.getLng();
+        this.lat = post.getLat();
+        this.placeName = post.getPlaceName();
     }
 
     // 랜덤 조회
