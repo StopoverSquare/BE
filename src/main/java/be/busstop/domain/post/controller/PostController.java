@@ -57,10 +57,9 @@ public class PostController {
 
     @Operation(summary = "게시글 차단")
     @PostMapping("/block/{postId}")
-    public ApiResponse<?> blockPost(@Valid @RequestBody BlockedPostDto blockedPostDto,
-                                    @PathVariable Long postId,
+    public ApiResponse<?> blockPost(@PathVariable Long postId,
                                     @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
-        return postService.blockPost(postId, userDetailsImpl.getUser(), blockedPostDto);
+        return postService.blockPost(postId, userDetailsImpl.getUser());
     }
 
     @Operation(summary = "게시글 차단해제")
