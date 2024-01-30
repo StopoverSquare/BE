@@ -68,6 +68,15 @@ public class Post extends Timestamped {
     @Column
     private String endTime;
 
+    @Column
+    private float lat;
+
+    @Column
+    private float lng;
+
+    @Column
+    private String placeName;
+
     @ElementCollection(fetch = FetchType.LAZY)
     @BatchSize(size = 5)
     @Column
@@ -104,7 +113,9 @@ public class Post extends Timestamped {
         this.imageUrlList = imageUrlList;
         this.thumbnailImageUrl = postRequestDto.getThumbnailImageUrl();
         this.chatroomId = chatroomId;
-
+        this.lng = postRequestDto.getLng();
+        this.lat = postRequestDto.getLat();
+        this.placeName = postRequestDto.getPlaceName();
     }
 
     public void increaseViews() {

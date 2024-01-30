@@ -23,6 +23,10 @@ public class PostRequestDto {
     private List<String> imageUrlList;
     private String thumbnailImageUrl;
     private Long subLimit;
+    private float lng;
+    private float lat;
+    private String placeName;
+
 
     public void setImageUrlList(List<String> imageUrlList) {
         this.imageUrlList = imageUrlList;

@@ -187,8 +187,9 @@ public class AdminPageService {
         List<User> allUsers = userRepository.findAll();
         List<SearchResponseDto> searchUsers = new ArrayList<>();
         for(User user : allUsers){
-            if(user.getNickname().contains(nickname)){
+            if(user.getNickname() != null && user.getNickname().contains(nickname)){
                 searchUsers.add(SearchResponseDto.builder()
+                                .nickname(user.getNickname())
                                 .age(user.getAge())
                                 .gender(user.getGender())
                                 .profileImg(user.getProfileImageUrl())
