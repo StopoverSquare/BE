@@ -34,19 +34,21 @@ public class CategoryStaticService {
         categoryStaticRepository.save(categoryStatic);
     }
     public CategoryStaticResponseDto getAllCategoryStatic(){
-        List<CategoryStatic> categoryStatics = categoryStaticRepository.findAll();
+        LocalDate now = LocalDate.now();
+        CategoryStatic categoryStatic = categoryStaticRepository.findByDate(now);
+
         Long eatsCnt = 0L;
         Long cultureCnt = 0L;
         Long exerciseCnt = 0L;
         Long studyCnt = 0L;
         Long categoryEtcCnt = 0L;
-        for(CategoryStatic categoryStatic : categoryStatics){
-            eatsCnt += categoryStatic.getEatsCnt();
-            cultureCnt += categoryStatic.getCultureCnt();
-            exerciseCnt += categoryStatic.getExerciseCnt();
-            studyCnt += categoryStatic.getStudyCnt();
-            categoryEtcCnt += categoryStatic.getEtcCnt();
-        }
+
+        eatsCnt += categoryStatic.getEatsCnt();
+        cultureCnt += categoryStatic.getCultureCnt();
+        exerciseCnt += categoryStatic.getExerciseCnt();
+        studyCnt += categoryStatic.getStudyCnt();
+        categoryEtcCnt += categoryStatic.getEtcCnt();
+
         return CategoryStaticResponseDto.builder()
                 .eatsCnt(eatsCnt)
                 .cultureCnt(cultureCnt)
