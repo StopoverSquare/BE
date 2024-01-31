@@ -39,7 +39,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                         locationEq(condition.getLocation()))
                 .orderBy(QPost.post.createdAt.desc())
                 .offset(pageable.getOffset())
-                .limit(pageable.getPageSize() + 1)
+                .limit(pageable.getPageSize())
                 .fetch();
 
         // 전체 게시글 수 조회 쿼리
