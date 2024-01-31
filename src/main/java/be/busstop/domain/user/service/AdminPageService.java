@@ -193,6 +193,7 @@ public class AdminPageService {
                                 .age(user.getAge())
                                 .gender(user.getGender())
                                 .profileImg(user.getProfileImageUrl())
+                                .role(user.getRole())
                                 .build());
             }
         }
