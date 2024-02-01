@@ -23,7 +23,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Getter
 @NoArgsConstructor(access = PROTECTED)
 public class Post extends Timestamped {
-
+    // 임시 주석
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(name = "post_id")

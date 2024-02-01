@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "chat_messages")
@@ -16,7 +17,7 @@ import java.io.Serializable;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChatMessageEntity extends Timestamped implements Serializable {
+public class ChatMessageEntity implements Serializable {
 
 
     @Id
@@ -41,6 +42,7 @@ public class ChatMessageEntity extends Timestamped implements Serializable {
 
     private String profileImageUrl;
 
+    private String createdAt;
 
 
 
