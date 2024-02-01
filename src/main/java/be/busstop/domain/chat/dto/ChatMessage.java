@@ -2,20 +2,26 @@ package be.busstop.domain.chat.dto;
 
 import be.busstop.domain.chat.entity.ChatMessageEntity;
 import be.busstop.global.utils.Timestamped;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.querydsl.core.annotations.QueryProjection;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor  // 기본 생성자 추가
 @Getter
 @Setter
-public class ChatMessage extends Timestamped implements Serializable {
+public class ChatMessage implements Serializable {
 
 
 
@@ -34,6 +40,7 @@ public class ChatMessage extends Timestamped implements Serializable {
     private String imageUrl;
     private long userCount;
     private String profileImageUrl;
+    private String createdAt;
 
     @JsonIgnore
     private String lastMessage; // 가장 최근 메시지 내용
@@ -43,10 +50,10 @@ public class ChatMessage extends Timestamped implements Serializable {
     private LocalDateTime lastMessageTime; // 가장 최근 메시지 시간
 
     @Builder
-    public ChatMessage(MessageType type, String roomId, long messageId,long senderId, String sender, String message,
+    public ChatMessage(MessageType type, String roomId, long messageId, long senderId, String sender, String message,
                        String imageUrl, long userCount, String profileImageUrl,
                        String lastMessage, String lastMessageSender, LocalDateTime lastMessageTime,
-                       LocalDateTime createdAt, LocalDateTime modifiedAt) {
+                       String createdAt) {
         this.type = type;
         this.roomId = roomId;
         this.messageId = messageId;
@@ -59,8 +66,9 @@ public class ChatMessage extends Timestamped implements Serializable {
         this.lastMessage = lastMessage;
         this.lastMessageSender = lastMessageSender;
         this.lastMessageTime = lastMessageTime;
-        this.createdAt = createdAt;
+        this.createdAt = (createdAt != null) ? createdAt : String.valueOf(LocalDateTime.now());
     }
+
 
     @QueryProjection
     public ChatMessage(ChatMessageEntity chatMessageEntity) {
@@ -72,7 +80,7 @@ public class ChatMessage extends Timestamped implements Serializable {
         this.imageUrl = chatMessageEntity.getImageUrl();
         this.userCount = chatMessageEntity.getUserCount();
         this.profileImageUrl = chatMessageEntity.getProfileImageUrl();
-        this.createdAt = chatMessageEntity.getCreatedAt();
+        this.createdAt = String.valueOf(chatMessageEntity.getCreatedAt());
     }
 
 

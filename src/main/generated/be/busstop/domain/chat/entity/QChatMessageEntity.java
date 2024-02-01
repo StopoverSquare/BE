@@ -19,19 +19,13 @@ public class QChatMessageEntity extends EntityPathBase<ChatMessageEntity> {
 
     public static final QChatMessageEntity chatMessageEntity = new QChatMessageEntity("chatMessageEntity");
 
-    public final be.busstop.global.utils.QTimestamped _super = new be.busstop.global.utils.QTimestamped(this);
-
-    //inherited
-    public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
+    public final StringPath createdAt = createString("createdAt");
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
     public final StringPath imageUrl = createString("imageUrl");
 
     public final StringPath message = createString("message");
-
-    //inherited
-    public final DateTimePath<java.time.LocalDateTime> modifiedAt = _super.modifiedAt;
 
     public final StringPath profileImageUrl = createString("profileImageUrl");
 
