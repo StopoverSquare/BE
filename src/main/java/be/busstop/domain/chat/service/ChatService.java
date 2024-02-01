@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -80,12 +81,11 @@ public class ChatService {
 
         long userCount = redisChatRepository.getUserCount(chatRoomEntity.getRoomId());
         chatMessage.setUserCount(userCount);
-
+        chatMessage.setCreatedAt(String.valueOf(LocalDateTime.now()));
         chatRoomEntity.updateLastMessage(chatMessage.getMessage(), chatMessage.getSender(), chatMessage.getProfileImageUrl(), LocalDateTime.now());
         chatMessageRepository.save(chatMessageEntity);
-
-        // 메시지를 Redis Pub/Sub 채널로 발송
-        redisTemplate.convertAndSend(channelTopic.getTopic(), chatMessage);
+            chatMessageRepository.save(chatMessageEntity);
+            redisTemplate.convertAndSend(channelTopic.getTopic(), chatMessage);
 
     }
 
