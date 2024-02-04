@@ -22,7 +22,10 @@ public class BlockedPost extends Timestamped {
     @ManyToOne
     @JoinColumn(name = "admin_id")
     private User admin;
-    public BlockedPost(Post post, User admin) {
+
+    private String content;
+    public BlockedPost( Post post, User admin) {
+
         this.post = post;
         this.admin = admin;
     }

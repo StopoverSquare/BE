@@ -8,4 +8,6 @@ import java.util.Optional;
 
 public interface AgeStaticRepository extends JpaRepository<AgeStatic, Long> {
     void deleteByDate(LocalDate date);
+
+    AgeStatic findByDate(LocalDate now);
 }

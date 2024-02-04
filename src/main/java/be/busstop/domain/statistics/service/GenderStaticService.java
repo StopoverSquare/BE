@@ -37,13 +37,14 @@ public class GenderStaticService {
         genderStaticRepository.save(genderStatic);
     }
     public GenderStaticResponseDto getAllGenderStatic(){
-        List<GenderStatic> genderStatics = genderStaticRepository.findAll();
+        LocalDate now = LocalDate.now();
+        GenderStatic genderStatic = genderStaticRepository.findByDate(now);
         Long maleCnt = 0L;
         Long femaleCnt = 0L;
-        for(GenderStatic genderStatic : genderStatics){
-            maleCnt += genderStatic.getMaleCnt();
-            femaleCnt += genderStatic.getFemaleCnt();
-        }
+
+        maleCnt += genderStatic.getMaleCnt();
+        femaleCnt += genderStatic.getFemaleCnt();
+
         return GenderStaticResponseDto.builder()
                 .maleCnt(maleCnt)
                 .femaleCnt(femaleCnt)

@@ -9,4 +9,5 @@ import java.util.Optional;
 
 public interface CategoryStaticRepository extends JpaRepository<CategoryStatic, Long> {
     void deleteByDate(LocalDate date);
+    CategoryStatic findByDate(LocalDate date);
 }

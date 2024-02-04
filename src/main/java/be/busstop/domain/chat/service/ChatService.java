@@ -85,7 +85,9 @@ public class ChatService {
         chatRoomEntity.updateLastMessage(chatMessage.getMessage(), chatMessage.getSender(), chatMessage.getProfileImageUrl(), LocalDateTime.now());
         chatMessageEntity.setCreatedAt(String.valueOf(LocalDateTime.now()));
         chatMessageRepository.save(chatMessageEntity);
-        redisTemplate.convertAndSend(channelTopic.getTopic(), chatMessage);
+
+        chatMessageRepository.save(chatMessageEntity);
+
 
     }
 

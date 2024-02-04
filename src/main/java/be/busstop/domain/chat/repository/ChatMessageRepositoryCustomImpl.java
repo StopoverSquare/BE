@@ -45,7 +45,6 @@ public class ChatMessageRepositoryCustomImpl implements ChatMessageRepositoryCus
     }
 
 
-
     private static SliceImpl<ChatMessage> checkEndPage(Pageable pageable, List<ChatMessage> content) {
         boolean hasNext = false;
         if (content.size() > pageable.getPageSize()) {

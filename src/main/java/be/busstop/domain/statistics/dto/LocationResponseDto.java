@@ -11,6 +11,10 @@ import java.time.LocalDate;
 @Builder
 public class LocationResponseDto {
     private Long postId;
+    private String title;
     private String location;
     private String date;
+    private String placeName;
+    private float lat;
+    private float lng;
 }

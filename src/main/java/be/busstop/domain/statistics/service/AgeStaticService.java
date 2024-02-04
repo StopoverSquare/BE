@@ -2,6 +2,7 @@ package be.busstop.domain.statistics.service;
 
 import be.busstop.domain.statistics.dto.AgeStaticResponseDto;
 import be.busstop.domain.statistics.entity.AgeStatic;
+import be.busstop.domain.statistics.entity.GenderStatic;
 import be.busstop.domain.statistics.repository.AgeStaticRepository;
 import be.busstop.domain.user.entity.User;
 import be.busstop.domain.user.repository.UserRepository;
@@ -34,7 +35,8 @@ public class AgeStaticService {
     }
 
     public AgeStaticResponseDto getAllAgeStatic(){
-        List<AgeStatic> ageStatics = ageStaticRepository.findAll();
+        LocalDate now = LocalDate.now();
+        AgeStatic ageStatic = ageStaticRepository.findByDate(now);
         Long tenCnt = 0L;
         Long twentyCnt = 0L;
         Long thirtyCnt = 0L;
@@ -42,15 +44,15 @@ public class AgeStaticService {
         Long fiftyCnt = 0L;
         Long sixtyCnt = 0L;
         Long ageEtcCnt = 0L;
-        for(AgeStatic ageStatic : ageStatics){
-            tenCnt += ageStatic.getTenCnt();
-            twentyCnt += ageStatic.getTwentyCnt();
-            thirtyCnt += ageStatic.getThirtyCnt();
-            fortyCnt += ageStatic.getFortyCnt();
-            fiftyCnt += ageStatic.getFiftyCnt();
-            sixtyCnt += ageStatic.getSixtyCnt();
-            ageEtcCnt += ageStatic.getEtcCnt();
-        }
+
+        tenCnt += ageStatic.getTenCnt();
+        twentyCnt += ageStatic.getTwentyCnt();
+        thirtyCnt += ageStatic.getThirtyCnt();
+        fortyCnt += ageStatic.getFortyCnt();
+        fiftyCnt += ageStatic.getFiftyCnt();
+        sixtyCnt += ageStatic.getSixtyCnt();
+        ageEtcCnt += ageStatic.getEtcCnt();
+
 
         return AgeStaticResponseDto.builder()
                 .tenCnt(tenCnt)

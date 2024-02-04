@@ -9,4 +9,6 @@ import java.util.Optional;
 
 public interface GenderStaticRepository extends JpaRepository<GenderStatic, Long> {
     void deleteByDate(LocalDate date);
+
+    GenderStatic findByDate(LocalDate now);
 }

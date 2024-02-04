@@ -36,10 +36,12 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                         dateEq(condition.getEndDate()),
                         titleOrContentEq(condition.getTitleOrContent()),
                         statusEq(condition.getStatus()),
-                        locationEq(condition.getLocation()))
+                        locationEq(condition.getLocation()),
+                        QPost.post.status.ne(Status.BLOCKED)
+                        )
                 .orderBy(QPost.post.createdAt.desc())
                 .offset(pageable.getOffset())
-                .limit(pageable.getPageSize() + 1)
+                .limit(pageable.getPageSize())
                 .fetch();
 
         // 전체 게시글 수 조회 쿼리
@@ -51,7 +53,8 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                         dateEq(condition.getEndDate()),
                         titleOrContentEq(condition.getTitleOrContent()),
                         statusEq(condition.getStatus()),
-                        locationEq(condition.getLocation()))
+                        locationEq(condition.getLocation()),
+                        QPost.post.status.ne(Status.BLOCKED))
                 .fetchCount();
 
         // Slice 객체 생성 및 반환
@@ -74,6 +77,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
     private BooleanExpression statusEq(String statusCond) {
         return hasText(statusCond) ? QPost.post.status.eq(Status.valueOf(statusCond)) : null;
     }
+
 
     private BooleanExpression titleOrContentEq(String titleOrContent) {
         return hasText(titleOrContent) ?

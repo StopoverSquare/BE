@@ -290,8 +290,14 @@ public class PostService {
 
     private List<Post> getRandomPostsFromDatabase() {
         List<Post> allPosts = postRepository.findAll();
-        Collections.shuffle(allPosts);
-        return allPosts;
+        List<Post> unblockedPosts = new ArrayList<>();
+        for(Post post : allPosts){
+            if(post.getStatus() != Status.BLOCKED){
+                unblockedPosts.add(post);
+            }
+        }
+        Collections.shuffle(unblockedPosts);
+        return unblockedPosts;
     }
 
     private List<Post> getRandomPostsFromDatabase(Pageable pageable) {
@@ -403,6 +409,7 @@ public class PostService {
         List<BlockedPostResponseDto> blockedPostResponseDtos = new ArrayList<>();
         for(BlockedPost post : allBlockedPosts){
             blockedPostResponseDtos.add(BlockedPostResponseDto.builder()
+                            .postId(post.getId())
                             .authorGender(post.getPost().getGender())
                             .postTitle(post.getPost().getTitle())
                             .authorAge(post.getPost().getAge())
