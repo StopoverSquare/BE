@@ -49,12 +49,18 @@ public class QPost extends EntityPathBase<Post> {
 
     public final ListPath<String, StringPath> imageUrlList = this.<String, StringPath>createList("imageUrlList", String.class, StringPath.class, PathInits.DIRECT2);
 
+    public final NumberPath<Float> lat = createNumber("lat", Float.class);
+
+    public final NumberPath<Float> lng = createNumber("lng", Float.class);
+
     public final StringPath location = createString("location");
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> modifiedAt = _super.modifiedAt;
 
     public final StringPath nickname = createString("nickname");
+
+    public final StringPath placeName = createString("placeName");
 
     public final StringPath profileImageUrl = createString("profileImageUrl");
 
