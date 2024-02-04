@@ -76,11 +76,19 @@ public class StaticService {
             Long postId = post.getId();
             String date = post.getEndDate();
             String location = post.getLocation();
+            String placeName = post.getPlaceName();
+            String title = post.getTitle();
+            float lat = post.getLat();
+            float lng = post.getLng();
 
             LocationResponseDto responseDto = LocationResponseDto.builder()
                     .postId(postId)
                     .date(date)
                     .location(location)
+                    .lat(lat)
+                    .lng(lng)
+                    .placeName(placeName)
+                    .title(title)
                     .build();
             locationList.add(responseDto);
         }
