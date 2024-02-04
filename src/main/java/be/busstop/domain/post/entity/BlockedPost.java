@@ -2,6 +2,7 @@ package be.busstop.domain.post.entity;
 
 import be.busstop.domain.post.dto.BlockedPostDto;
 import be.busstop.domain.user.entity.User;
+import be.busstop.global.utils.Timestamped;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Entity
 @Getter
 @NoArgsConstructor(access = PROTECTED)
-public class BlockedPost {
+public class BlockedPost extends Timestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -21,11 +22,9 @@ public class BlockedPost {
     @ManyToOne
     @JoinColumn(name = "admin_id")
     private User admin;
-    private String content;
-    public BlockedPost(BlockedPostDto blockedPostDto, Post post, User admin) {
+    public BlockedPost(Post post, User admin) {
         this.post = post;
         this.admin = admin;
-        this.content = blockedPostDto.getContent();
     }
 }
 

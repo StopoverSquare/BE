@@ -22,11 +22,17 @@ public class QBlockedPost extends EntityPathBase<BlockedPost> {
 
     public static final QBlockedPost blockedPost = new QBlockedPost("blockedPost");
 
+    public final be.busstop.global.utils.QTimestamped _super = new be.busstop.global.utils.QTimestamped(this);
+
     public final be.busstop.domain.user.entity.QUser admin;
 
-    public final StringPath content = createString("content");
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
+
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> modifiedAt = _super.modifiedAt;
 
     public final QPost post;
 
