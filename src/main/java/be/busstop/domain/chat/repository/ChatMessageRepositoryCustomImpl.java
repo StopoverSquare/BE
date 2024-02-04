@@ -31,8 +31,7 @@ public class ChatMessageRepositoryCustomImpl implements ChatMessageRepositoryCus
                 .select(new QChatMessage(QChatMessageEntity.chatMessageEntity))
                 .from(QChatMessageEntity.chatMessageEntity)
                 .where(
-                        roomIdEq(condition.getRoomId()),
-                        createdAtGt(condition.getEntryTime()))
+                        roomIdEq(condition.getRoomId()))
                 .orderBy(QChatMessageEntity.chatMessageEntity.id.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize() + 1)
@@ -43,10 +42,6 @@ public class ChatMessageRepositoryCustomImpl implements ChatMessageRepositoryCus
 
     private BooleanExpression roomIdEq(String roomIdCond) {
         return hasText(roomIdCond) ? QChatMessageEntity.chatMessageEntity.roomId.eq(roomIdCond) : null;
-    }
-
-    private BooleanExpression createdAtGt(LocalDateTime entryTime) {
-        return entryTime != null ? QChatMessageEntity.chatMessageEntity.createdAt.gt(entryTime) : null;
     }
 
 
