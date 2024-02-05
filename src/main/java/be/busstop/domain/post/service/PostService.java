@@ -227,6 +227,8 @@ public class PostService {
         Post post = confirmPost(postId, user);
         deleteImage(post);
         postRepository.delete(post);
+        ChatRoomEntity chatRoomEntity = chatRoomRepository.findByRoomId(post.getChatroomId());
+        chatRoomRepository.delete(chatRoomEntity);
         log.info("'{}'님이 게시물 ID '{}'를 삭제했습니다.", user.getNickname(), postId);
         return okWithMessage(POST_DELETE_SUCCESS);
     }
